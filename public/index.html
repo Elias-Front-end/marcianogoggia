@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cadastro Eleitores - Marciano Goggia</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="logo">
+            <span class="candidate-name">Marciano Goggia</span>
+            <span class="candidate-role">Candidato à Prefeitura</span>
+        </div>
+        <div class="nav-links">
+            <a href="index.html" class="active">Cadastro</a>
+            <a href="mapa.html">Mapa</a>
+            <a href="dashboard.html">Dashboard</a>
+            <a href="admin.html">Gerenciar</a>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="form-section">
+            <h1>Cadastro de Apoiador</h1>
+            <p class="subtitle">Preencha os dados para registrar seu apoio</p>
+
+            <form id="cadastroForm" class="cadastro-form">
+                <div class="form-group">
+                    <label for="nome">Nome Completo *</label>
+                    <input type="text" id="nome" name="nome" required placeholder="Digite seu nome completo">
+                </div>
+
+                <div class="form-group">
+                    <label for="rua">Rua/Avenida *</label>
+                    <input type="text" id="rua" name="rua" required placeholder="Nome da rua ou avenida">
+                </div>
+
+                <div class="form-group">
+                    <label for="numero">Número *</label>
+                    <input type="text" id="numero" name="numero" required placeholder="Número da residência">
+                </div>
+
+                <div class="form-group">
+                    <label for="bairro">Bairro *</label>
+                    <select id="bairro" name="bairro" required>
+                        <option value="">Selecione o bairro</option>
+                        <option value="Centro">Centro</option>
+                        <option value="Aeroporto">Aeroporto</option>
+                        <option value="Alto da Boa Vista">Alto da Boa Vista</option>
+                        <option value="Barra do João José">Barra do João José</option>
+                        <option value="Bela Vista">Bela Vista</option>
+                        <option value="Boa Vista">Boa Vista</option>
+                        <option value="Brasil">Brasil</option>
+                        <option value="Cachoeirinha">Cachoeirinha</option>
+                        <option value="Campo Largo">Campo Largo</option>
+                        <option value="Campus">Campus</option>
+                        <option value="Cidade Industrial">Cidade Industrial</option>
+                        <option value="Colônia Rio Grande">Colônia Rio Grande</option>
+                        <option value="Cruzeiro">Cruzeiro</option>
+                        <option value="Eucaliptos">Eucaliptos</option>
+                        <option value="Guabirotuba">Guabirotuba</option>
+                        <option value="Inocência">Inocência</option>
+                        <option value="Ipê">Ipê</option>
+                        <option value="Jardim">Jardim</option>
+                        <option value="Jardim dos Eucaliptos">Jardim dos Eucaliptos</option>
+                        <option value="Jardim Kennedy">Jardim Kennedy</option>
+                        <option value="Jardim Maria Helena">Jardim Maria Helena</option>
+                        <option value="Muricy">Muricy</option>
+                        <option value="Oliveira">Oliveira</option>
+                        <option value="Parque Industrial">Parque Industrial</option>
+                        <option value="Parque São Pedro">Parque São Pedro</option>
+                        <option value="Pedra Grande">Pedra Grande</option>
+                        <option value="Pineville">Pineville</option>
+                        <option value="Ponta Grossa">Ponta Grossa</option>
+                        <option value="Portão">Portão</option>
+                        <option value="Possidônio">Possidônio</option>
+                        <option value="Rio Pequeno">Rio Pequeno</option>
+                        <option value="Santo Antônio">Santo Antônio</option>
+                        <option value="São Cristóvão">São Cristóvão</option>
+                        <option value="São Francisco">São Francisco</option>
+                        <option value="São João">São João</option>
+                        <option value="São Pedro">São Pedro</option>
+                        <option value="Seara">Seara</option>
+                        <option value="Taboão">Taboão</option>
+                        <option value="Tancredo">Tancredo</option>
+                        <option value="Vila Formosa">Vila Formosa</option>
+                        <option value="Vila Guarani">Vila Guarani</option>
+                        <option value="Vila Izabel">Vila Izabel</option>
+                        <option value="Vila Residencial">Vila Residencial</option>
+                        <option value="Vila Velha">Vila Velha</option>
+                        <option value="Xaxim">Xaxim</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="telefone">Telefone (Opcional)</label>
+                    <input type="tel" id="telefone" name="telefone" placeholder="(41) 99999-9999">
+                </div>
+
+                <div class="form-group">
+                    <label for="email">Email (Opcional)</label>
+                    <input type="email" id="email" name="email" placeholder="seu@email.com">
+                </div>
+
+                <button type="submit" class="btn-submit">Cadastrar</button>
+            </form>
+        </div>
+
+        <div class="stats-card">
+            <h3>Total de Apoiadores</h3>
+            <div class="stats-number" id="totalApoiadores">0</div>
+            <p class="stats-subtitle">cadastrados até agora</p>
+        </div>
+    </div>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="js/alert.js"></script>
+    <script src="js/script.js"></script>
+</body>
+</html>

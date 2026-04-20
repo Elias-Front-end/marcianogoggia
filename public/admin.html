@@ -1,0 +1,838 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gerenciar Cadastros - Marciano Goggia</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html, body { height: 100%; font-family: 'Inter', sans-serif; background: #0a0e17; color: #fff; font-size: 14px; overflow-x: hidden; }
+        
+        .navbar { 
+            position: fixed; top: 0; left: 0; right: 0; z-index: 1000;
+            display: flex; justify-content: space-between; padding: 0.8rem 1.5rem; 
+            background: rgba(0,0,0,0.7); backdrop-filter: blur(10px);
+        }
+        .logo { font-size: 1.3rem; font-weight: 700; color: #00d4ff; }
+        .nav { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+        .nav a { color: #fff; text-decoration: none; padding: 0.5rem 1rem; border-radius: 8px; font-size: 0.9rem; }
+        .nav a.active { background: rgba(0,212,255,0.2); color: #00d4ff; }
+        
+        .main-container {
+            padding-top: 70px;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .toolbar {
+            padding: 1rem 1.5rem;
+            background: rgba(0,0,0,0.3);
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+        
+        .toolbar-left {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+        
+        .page-title {
+            color: #00d4ff;
+            font-size: 1.4rem;
+            font-weight: 600;
+        }
+        
+        .stats-bar {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+        
+        .stat-pill {
+            background: rgba(0,212,255,0.1);
+            border: 1px solid rgba(0,212,255,0.3);
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            color: #00d4ff;
+        }
+        
+        .toolbar-right {
+            display: flex;
+            gap: 0.8rem;
+            align-items: center;
+        }
+        
+        .btn {
+            padding: 0.8rem 1.5rem;
+            border-radius: 8px;
+            border: none;
+            font-size: 0.95rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .btn-primary {
+            background: #00d4ff;
+            color: #0a0e17;
+        }
+        
+        .btn-primary:hover {
+            background: #00b8e6;
+            transform: translateY(-1px);
+        }
+        
+        .btn-secondary {
+            background: transparent;
+            color: #fff;
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+        
+        .btn-secondary:hover {
+            background: rgba(255,255,255,0.1);
+        }
+        
+        .btn-export {
+            background: rgba(0,255,136,0.2);
+            color: #00ff88;
+            border: 1px solid rgba(0,255,136,0.3);
+        }
+        
+        .btn-export:hover {
+            background: rgba(0,255,136,0.3);
+        }
+        
+        .content-area {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            padding: 1rem 1.5rem;
+            overflow: hidden;
+        }
+        
+        .search-section {
+            margin-bottom: 1rem;
+        }
+        
+        .search-bar {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+        
+        .search-bar input, .search-bar select {
+            padding: 0.8rem;
+            border-radius: 8px;
+            border: 1px solid rgba(255,255,255,0.15);
+            background: rgba(0,0,0,0.3);
+            color: #fff;
+            font-size: 0.95rem;
+        }
+        
+        .search-bar input {
+            flex: 1;
+            min-width: 250px;
+        }
+        
+        .search-bar select {
+            min-width: 180px;
+        }
+        
+        .table-container {
+            flex: 1;
+            background: rgba(255,255,255,0.03);
+            border-radius: 16px;
+            border: 1px solid rgba(255,255,255,0.08);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .table-header {
+            padding: 1rem 1.5rem;
+            background: rgba(0,212,255,0.1);
+            border-bottom: 1px solid rgba(255,255,255,0.08);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .table-header h3 {
+            color: #00d4ff;
+            font-size: 1.1rem;
+        }
+        
+        .table-body {
+            flex: 1;
+            overflow-y: auto;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.95rem;
+        }
+        
+        th {
+            background: rgba(0,0,0,0.3);
+            color: #00d4ff;
+            font-weight: 600;
+            padding: 1rem;
+            text-align: left;
+            position: sticky;
+            top: 0;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        
+        td {
+            padding: 1rem;
+            border-bottom: 1px solid rgba(255,255,255,0.06);
+            vertical-align: top;
+        }
+        
+        tr:hover {
+            background: rgba(255,255,255,0.03);
+        }
+        
+        .action-btns {
+            display: flex;
+            gap: 0.5rem;
+        }
+        
+        .btn-edit, .btn-delete {
+            padding: 0.5rem 0.8rem;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            border: none;
+            transition: all 0.2s;
+        }
+        
+        .btn-edit {
+            background: rgba(255,193,7,0.2);
+            color: #ffc107;
+        }
+        
+        .btn-edit:hover {
+            background: rgba(255,193,7,0.3);
+        }
+        
+        .btn-delete {
+            background: rgba(255,68,68,0.2);
+            color: #ff4444;
+        }
+        
+        .btn-delete:hover {
+            background: rgba(255,68,68,0.3);
+        }
+        
+        .badge {
+            padding: 0.3rem 0.6rem;
+            border-radius: 4px;
+            font-size: 0.8rem;
+        }
+        
+        .badge-data {
+            background: rgba(0,212,255,0.2);
+            color: #00d4ff;
+        }
+        
+        .badge-hora {
+            background: rgba(0,255,136,0.2);
+            color: #00ff88;
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 3rem;
+            color: rgba(255,255,255,0.5);
+            font-size: 1.1rem;
+        }
+        
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.8);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+        }
+        
+        .modal-overlay.show {
+            display: flex;
+        }
+        
+        .modal {
+            background: #1a1f2e;
+            border-radius: 16px;
+            width: 95%;
+            max-width: 600px;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+        
+        .modal-header {
+            padding: 1.5rem;
+            background: rgba(0,212,255,0.1);
+            border-radius: 16px 16px 0 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .modal-header h2 {
+            color: #00d4ff;
+            font-size: 1.3rem;
+        }
+        
+        .modal-close {
+            background: none;
+            border: none;
+            color: #fff;
+            font-size: 1.8rem;
+            cursor: pointer;
+            line-height: 1;
+            padding: 0;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .modal-body {
+            padding: 1.5rem;
+        }
+        
+        .form-grid {
+            display: grid;
+            gap: 1.2rem;
+        }
+        
+        .form-row {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 1rem;
+        }
+        
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+        
+        .form-group label {
+            font-size: 0.95rem;
+            color: rgba(255,255,255,0.8);
+            font-weight: 500;
+        }
+        
+        .form-group input, .form-group select {
+            padding: 1rem;
+            border-radius: 8px;
+            border: 1px solid rgba(255,255,255,0.15);
+            background: rgba(0,0,0,0.3);
+            color: #fff;
+            font-size: 1rem;
+        }
+        
+        .form-group input:focus, .form-group select:focus {
+            outline: none;
+            border-color: #00d4ff;
+            box-shadow: 0 0 0 3px rgba(0,212,255,0.1);
+        }
+        
+        .modal-footer {
+            padding: 1.5rem;
+            border-top: 1px solid rgba(255,255,255,0.1);
+            display: flex;
+            gap: 1rem;
+            justify-content: flex-end;
+        }
+        
+        @media (max-width: 768px) {
+            .toolbar {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            
+            .toolbar-left, .toolbar-right {
+                width: 100%;
+                justify-content: space-between;
+            }
+            
+            .search-bar {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            .search-bar input, .search-bar select {
+                min-width: unset;
+            }
+            
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+            
+            .modal {
+                width: 98%;
+                margin: 1rem;
+            }
+            
+            .table-header {
+                flex-direction: column;
+                gap: 1rem;
+                align-items: flex-start;
+            }
+            
+            th, td {
+                padding: 0.8rem 0.5rem;
+                font-size: 0.9rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="logo">Marciano Goggia</div>
+        <div class="nav">
+            <a href="index.html">Cadastro</a>
+            <a href="mapa.html">Mapa</a>
+            <a href="dashboard.html">Dashboard</a>
+            <a href="admin.html" class="active">Gerenciar</a>
+        </div>
+    </nav>
+    
+    <div class="main-container">
+        <div class="toolbar">
+            <div class="toolbar-left">
+                <h1 class="page-title">Gerenciar Apoiadores</h1>
+                <div class="stats-bar">
+                    <div class="stat-pill" id="totalCount">Total: 0</div>
+                    <div class="stat-pill" id="bairroCount">Bairros: 0</div>
+                </div>
+            </div>
+            <div class="toolbar-right">
+                <button class="btn btn-secondary" onclick="exportarCSV()">
+                    📥 Exportar CSV
+                </button>
+                <button class="btn btn-primary" onclick="abrirModalCadastro()">
+                    ➕ Novo Cadastro
+                </button>
+            </div>
+        </div>
+        
+        <div class="content-area">
+            <div class="search-section">
+                <div class="search-bar">
+                    <input type="text" id="searchInput" placeholder="Buscar por nome, rua ou bairro..." oninput="filtrarDados()">
+                </div>
+            </div>
+            
+            <div class="table-container">
+                <div class="table-header">
+                    <h3>Lista de Apoiadores</h3>
+                    <span id="filteredCount" style="color: rgba(255,255,255,0.6);">0 registros</span>
+                </div>
+                <div class="table-body">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Nome</th>
+                                <th>Endereço</th>
+                                <th>Bairro</th>
+                                <th>Contato</th>
+                                <th>Data/Hora</th>
+                                <th>Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tableBody">
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de Cadastro -->
+    <div class="modal-overlay" id="cadastroModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h2 id="modalTitle">Novo Apoiador</h2>
+                <button class="modal-close" onclick="fecharModalCadastro()">×</button>
+            </div>
+            <form id="cadastroForm">
+                <div class="modal-body">
+                    <input type="hidden" id="editId">
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="nome">Nome Completo *</label>
+                            <input type="text" id="nome" required placeholder="Digite o nome completo">
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="rua">Rua/Avenida *</label>
+                                <input type="text" id="rua" required placeholder="Nome da rua">
+                            </div>
+                            <div class="form-group">
+                                <label for="numero">Número *</label>
+                                <input type="text" id="numero" required placeholder="Nº">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="bairro">Bairro *</label>
+                            <input type="text" id="bairro" required placeholder="Digite o nome do bairro">
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="telefone">Telefone</label>
+                                <input type="tel" id="telefone" placeholder="(41) 99999-9999">
+                            </div>
+                            <div class="form-group">
+                                <label for="email">Email</label>
+                                <input type="email" id="email" placeholder="email@exemplo.com">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" onclick="fecharModalCadastro()">Cancelar</button>
+                    <button type="submit" class="btn btn-primary" id="btnSubmit">Cadastrar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="js/alert.js"></script>
+    <script>
+        const API_URL = '/api';
+        let allData = [];
+        let editando = false;
+        
+        // Coordenadas padrão de São José dos Pinhais
+        const SJP_CENTER = { lat: -25.5317, lng: -49.2921 };
+        
+        // Mapeamento de bairros para coordenadas mais precisas
+        const BAIRROS_COORDS = {
+            'Centro': [-25.5317, -49.2921],
+            'Aeroporto': [-25.5084, -49.1755],
+            'Alto da Boa Vista': [-25.5521, -49.3210],
+            'Barra do João José': [-25.4898, -49.2456],
+            'Bela Vista': [-25.5456, -49.2567],
+            'Boa Vista': [-25.5378, -49.2234],
+            'Brasil': [-25.5212, -49.2634],
+            'Cachoeirinha': [-25.5678, -49.3123],
+            'Campo Largo': [-25.4534, -49.3456],
+            'Campus': [-25.5123, -49.3234],
+            'Cidade Industrial': [-25.4834, -49.2834],
+            'Colônia Rio Grande': [-25.4123, -49.3567],
+            'Cruzeiro': [-25.5234, -49.2345],
+            'Eucaliptos': [-25.5567, -49.2934],
+            'Guabirotuba': [-25.5234, -49.3456],
+            'Inocência': [-25.4789, -49.2567],
+            'Ipê': [-25.5489, -49.2789],
+            'Jardim': [-25.5345, -49.3012],
+            'Jardim dos Eucaliptos': [-25.5623, -49.2901],
+            'Jardim Kennedy': [-25.5012, -49.2678],
+            'Jardim Maria Helena': [-25.5156, -49.2890],
+            'Muricy': [-25.4876, -49.2345],
+            'Oliveira': [-25.5432, -49.3123],
+            'Parque Industrial': [-25.4765, -49.2765],
+            'Parque São Pedro': [-25.5234, -49.3512],
+            'Pedra Grande': [-25.5765, -49.3345],
+            'Pineville': [-25.5578, -49.2654],
+            'Ponta Grossa': [-25.4654, -49.3456],
+            'Portão': [-25.5098, -49.2543],
+            'Possidônio': [-25.4567, -49.3234],
+            'Rio Pequeno': [-25.4987, -49.3345],
+            'Santo Antônio': [-25.5321, -49.2765],
+            'São Cristóvão': [-25.5156, -49.2543],
+            'São Francisco': [-25.5467, -49.2432],
+            'São João': [-25.5234, -49.2890],
+            'São Pedro': [-25.5567, -49.3089],
+            'Seara': [-25.4876, -49.2987],
+            'Taboão': [-25.5123, -49.3345],
+            'Tancredo': [-25.5423, -49.2543],
+            'Vila Formosa': [-25.4765, -49.2345],
+            'Vila Guarani': [-25.5098, -49.3123],
+            'Vila Izabel': [-25.5234, -49.2654],
+            'Vila Residencial': [-25.4987, -49.2543],
+            'Vila Velha': [-25.5312, -49.3089],
+            'Xaxim': [-25.4876, -49.3210]
+        };
+        
+        async function buscarCoordenadas(rua, numero, bairro) {
+            const endereco = `${rua}, ${numero}, ${bairro}, São José dos Pinhais, Paraná, Brasil`;
+            
+            // Normalizar nome do bairro para busca
+            const bairroLower = bairro.toLowerCase().trim();
+            
+            try {
+                const encodedAddr = encodeURIComponent(endereco);
+                const response = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodedAddr}&limit=1`, {
+                    headers: {
+                        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+                    }
+                });
+                
+                const data = await response.json();
+                
+                if (data && data.length > 0) {
+                    return {
+                        lat: parseFloat(data[0].lat),
+                        lng: parseFloat(data[0].lon)
+                    };
+                }
+                
+                // Se não encontrar pelo endereço específico, usa coordenadas do bairro
+                if (bairro && BAIRROS_COORDS[bairroLower]) {
+                    const coords = BAIRROS_COORDS[bairroLower];
+                    return {
+                        lat: coords[0],
+                        lng: coords[1]
+                    };
+                }
+                
+                // Se o bairro não existe no mapeamento, usa coordenadas padrão com base no nome
+                // Retorna coordenadas padrão de São José dos Pinhais
+                return {
+                    lat: SJP_CENTER.lat,
+                    lng: SJP_CENTER.lng
+                };
+                
+            } catch (error) {
+                console.error('Erro ao buscar coordenadas:', error);
+                
+                // Usa coordenadas do bairro se disponível
+                if (bairro && BAIRROS_COORDS[bairroLower]) {
+                    const coords = BAIRROS_COORDS[bairroLower];
+                    return {
+                        lat: coords[0],
+                        lng: coords[1]
+                    };
+                }
+                
+                return {
+                    lat: SJP_CENTER.lat,
+                    lng: SJP_CENTER.lng
+                };
+            }
+        }
+        
+        async function carregarDados() {
+            try {
+                const res = await fetch(API_URL + '/apoiadores');
+                allData = await res.json();
+                atualizarStats();
+                renderizarTabela(allData);
+            } catch(e) {
+                console.error('Erro:', e);
+                Alert.error('Erro ao carregar dados');
+            }
+        }
+        
+        function atualizarStats() {
+            document.getElementById('totalCount').textContent = `Total: ${allData.length}`;
+            const bairros = [...new Set(allData.map(d => d.bairro).filter(Boolean))];
+            document.getElementById('bairroCount').textContent = `Bairros: ${bairros.length}`;
+        }
+        
+        function filtrarDados() {
+            const termo = document.getElementById('searchInput').value.toLowerCase();
+            
+            const filtrado = allData.filter(d => {
+                const matchTermo = !termo || 
+                    (d.nome && d.nome.toLowerCase().includes(termo)) ||
+                    (d.rua && d.rua.toLowerCase().includes(termo)) ||
+                    (d.bairro && d.bairro.toLowerCase().includes(termo));
+                return matchTermo;
+            });
+            
+            renderizarTabela(filtrado);
+            document.getElementById('filteredCount').textContent = `${filtrado.length} registros`;
+        }
+        
+        function renderizarTabela(dados) {
+            const tbody = document.getElementById('tableBody');
+            
+            if (dados.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="6" class="empty-state">Nenhum registro encontrado</td></tr>';
+                return;
+            }
+            
+            tbody.innerHTML = dados.map(d => `
+                <tr>
+                    <td><strong>${d.nome || '-'}</strong></td>
+                    <td>${d.rua || '-'}, ${d.numero || '-'}</td>
+                    <td>${d.bairro || '-'}</td>
+                    <td>
+                        ${d.telefone ? `<div>📱 ${d.telefone}</div>` : ''}
+                        ${d.email ? `<div>✉️ ${d.email}</div>` : ''}
+                    </td>
+                    <td>
+                        <span class="badge badge-data">${d.data_cadastro || '-'}</span>
+                        ${d.hora_cadastro ? `<div class="badge badge-hora" style="margin-top: 0.3rem;">${d.hora_cadastro}</div>` : ''}
+                        ${d.latitude && d.longitude ? `<div class="badge" style="margin-top: 0.3rem; background: rgba(0,255,136,0.2); color: #00ff88;">📍 Localizado</div>` : '<div class="badge" style="margin-top: 0.3rem; background: rgba(255,193,7,0.2); color: #ffc107;">⚠️ Estimado</div>'}
+                    </td>
+                    <td>
+                        <div class="action-btns">
+                            <button class="btn-edit" onclick="editarRegistro(${d.id})" title="Editar">✏️</button>
+                            <button class="btn-delete" onclick="excluirRegistro(${d.id})" title="Excluir">🗑️</button>
+                        </div>
+                    </td>
+                </tr>
+            `).join('');
+        }
+        
+        function abrirModalCadastro() {
+            editando = false;
+            document.getElementById('modalTitle').textContent = 'Novo Apoiador';
+            document.getElementById('btnSubmit').textContent = 'Cadastrar';
+            document.getElementById('cadastroForm').reset();
+            document.getElementById('editId').value = '';
+            document.getElementById('cadastroModal').classList.add('show');
+            document.getElementById('nome').focus();
+        }
+        
+        function fecharModalCadastro() {
+            document.getElementById('cadastroModal').classList.remove('show');
+        }
+        
+        function editarRegistro(id) {
+            const registro = allData.find(d => d.id === id);
+            if (!registro) return;
+            
+            editando = true;
+            document.getElementById('modalTitle').textContent = 'Editar Apoiador';
+            document.getElementById('btnSubmit').textContent = 'Atualizar';
+            
+            document.getElementById('editId').value = registro.id;
+            document.getElementById('nome').value = registro.nome || '';
+            document.getElementById('rua').value = registro.rua || '';
+            document.getElementById('numero').value = registro.numero || '';
+            document.getElementById('bairro').value = registro.bairro || '';
+            document.getElementById('telefone').value = registro.telefone || '';
+            document.getElementById('email').value = registro.email || '';
+            
+            document.getElementById('cadastroModal').classList.add('show');
+            document.getElementById('nome').focus();
+        }
+        
+        async function excluirRegistro(id) {
+            const confirmado = await Alert.confirm('Tem certeza que deseja excluir este cadastro?');
+            if (!confirmado) return;
+            
+            try {
+                await fetch(API_URL + '/apoiadores/' + id, { method: 'DELETE' });
+                Alert.success('Cadastro excluído com sucesso!');
+                carregarDados();
+            } catch(e) {
+                Alert.error('Erro ao excluir');
+            }
+        }
+        
+        document.getElementById('cadastroForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const nome = document.getElementById('nome').value;
+            const rua = document.getElementById('rua').value;
+            const numero = document.getElementById('numero').value;
+            const bairro = document.getElementById('bairro').value;
+            const telefone = document.getElementById('telefone').value;
+            const email = document.getElementById('email').value;
+            const id = document.getElementById('editId').value;
+            
+            // Mostrar loading
+            const btnSubmit = document.getElementById('btnSubmit');
+            const originalText = btnSubmit.textContent;
+            btnSubmit.textContent = 'Buscando coordenadas...';
+            btnSubmit.disabled = true;
+            
+            try {
+                // Buscar coordenadas automaticamente
+                const coords = await buscarCoordenadas(rua, numero, bairro);
+                
+                const dados = {
+                    nome: nome,
+                    rua: rua,
+                    numero: numero,
+                    bairro: bairro,
+                    telefone: telefone,
+                    email: email,
+                    latitude: coords.lat,
+                    longitude: coords.lng
+                };
+                
+                if (id) {
+                    await fetch(API_URL + '/apoiadores/' + id, {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(dados)
+                    });
+                    Alert.success('Cadastro atualizado com sucesso!');
+                } else {
+                    await fetch(API_URL + '/apoiadores', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(dados)
+                    });
+                    Alert.success('Novo cadastro realizado com sucesso!');
+                }
+                
+                fecharModalCadastro();
+                carregarDados();
+            } catch(e) {
+                console.error('Erro:', e);
+                Alert.error('Erro ao salvar');
+            } finally {
+                btnSubmit.textContent = originalText;
+                btnSubmit.disabled = false;
+            }
+        });
+        
+        function exportarCSV() {
+            if (allData.length === 0) {
+                Alert.warning('Nenhum dado para exportar');
+                return;
+            }
+            
+            const csv = 'Nome,Rua,Numero,Bairro,Telefone,Email,Data Cadastro,Hora Cadastro\n' + 
+                allData.map(d => 
+                    `"${d.nome || ''}","${d.rua || ''}","${d.numero || ''}","${d.bairro || ''}","${d.telefone || ''}","${d.email || ''}","${d.data_cadastro || ''}","${d.hora_cadastro || ''}"`
+                ).join('\n');
+            
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = 'apoiadores.csv';
+            a.click();
+            Alert.success('Exportação concluída!');
+        }
+        
+        // Fechar modal ao clicar fora
+        document.getElementById('cadastroModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                fecharModalCadastro();
+            }
+        });
+        
+        document.addEventListener('DOMContentLoaded', carregarDados);
+    </script>
+</body>
+</html>
