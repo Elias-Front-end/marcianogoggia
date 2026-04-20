@@ -4,31 +4,42 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Mapa de Apoiadores - Marciano Goggia</title>
-    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        .navbar { 
+            position: fixed; top: 0; left: 0; right: 0; z-index: 1000;
+            display: flex; justify-content: space-between; padding: 0.8rem 1.5rem; 
+            background: rgba(0,0,0,0.8); backdrop-filter: blur(10px);
+        }
+        .logo { font-size: 1.3rem; font-weight: 700; color: #00d4ff; }
+        .candidate-role { font-size: 0.8rem; color: rgba(255,255,255,0.6); }
+        
+        .nav-links {
+            display: flex;
+            gap: 0.5rem;
+        }
+        
+        .nav-links a {
+            color: rgba(255,255,255,0.7);
+            text-decoration: none;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            transition: all 0.3s;
+            font-size: 0.9rem;
+        }
+        
+        .nav-links a:hover, .nav-links a.active {
+            background: rgba(0,212,255,0.2);
+            color: #00d4ff;
+        }
+        
         #map {
-            height: calc(100vh - 80px);
+            height: calc(100vh - 60px);
             width: 100%;
             margin-top: 60px;
-        }
-        
-        .map-container {
-            position: relative;
-            height: 100vh;
-            overflow: hidden;
-        }
-        
-        .map-header {
-            position: fixed;
-            top: 60px;
-            left: 0;
-            right: 0;
-            z-index: 1000;
-            background: rgba(0,0,0,0.7);
-            backdrop-filter: blur(10px);
-            padding: 1rem;
-            color: white;
         }
         
         .legend {
@@ -36,11 +47,17 @@
             bottom: 20px;
             right: 20px;
             z-index: 1000;
-            background: rgba(0,0,0,0.8);
+            background: rgba(0,0,0,0.85);
             padding: 1rem;
-            border-radius: 8px;
-            color: white;
-            max-width: 300px;
+            border-radius: 12px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        
+        .legend h4 {
+            color: #fff;
+            font-size: 0.9rem;
+            margin-bottom: 0.8rem;
         }
         
         .legend-item {
@@ -48,28 +65,43 @@
             align-items: center;
             gap: 0.5rem;
             margin-bottom: 0.5rem;
+            color: rgba(255,255,255,0.8);
+            font-size: 0.85rem;
         }
         
         .legend-icon {
-            width: 20px;
-            height: 20px;
+            width: 16px;
+            height: 16px;
             border-radius: 50%;
             border: 2px solid white;
         }
         
-        .gm-style-iw {
-            color: black !important;
+        .custom-marker {
+            background: transparent;
+            border: none;
         }
         
-        .gm-style-iw-d {
-            color: black !important;
+        .leaflet-popup-content-wrapper {
+            background: #1a1f2e;
+            color: #fff;
+            border-radius: 12px;
+        }
+        
+        .leaflet-popup-tip {
+            background: #1a1f2e;
+        }
+        
+        .leaflet-popup-content {
+            margin: 12px;
+            color: #fff;
+            font-family: 'Inter', sans-serif;
         }
     </style>
 </head>
 <body>
     <nav class="navbar">
         <div class="logo">
-            <span class="candidate-name">Marciano Goggia</span>
+            <span>Marciano Goggia</span>
             <span class="candidate-role">Candidato à Prefeitura</span>
         </div>
         <div class="nav-links">
@@ -80,32 +112,18 @@
         </div>
     </nav>
 
-    <div class="map-container">
-        <div class="map-header">
-            <h1>Mapa de Apoiadores</h1>
-            <p>Visualize a distribuição geográfica dos apoiadores em São José dos Pinhais</p>
-        </div>
-        
-        <div id="map"></div>
-        
-        <div class="legend">
-            <h4>Legenda</h4>
-            <div class="legend-item">
-                <div class="legend-icon" style="background: #4285F4;"></div>
-                <span>Apoiador</span>
-            </div>
-            <div class="legend-item">
-                <div class="legend-icon" style="background: #EA4335;"></div>
-                <span>Voluntário</span>
-            </div>
+    <div id="map"></div>
+    
+    <div class="legend">
+        <h4>Legenda</h4>
+        <div class="legend-item">
+            <div class="legend-icon" style="background: #4285F4;"></div>
+            <span>Apoiador</span>
         </div>
     </div>
 
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script src="js/alert.js"></script>
-    <script src="js/markerclusterer.js"></script>
     <script src="js/script.js"></script>
-    <script async defer
-        src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAvYQSf_rdU7hlXY7HULrnPmp60fWFi7Rw&libraries=marker&callback=initMap">
-    </script>
 </body>
 </html>
