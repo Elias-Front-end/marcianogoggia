@@ -5,66 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Mapa de Apoiadores - Marciano Goggia</title>
     <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <style>
-        #map {
-            height: calc(100vh - 80px);
-            width: 100%;
-            margin-top: 60px;
-        }
-        
-        .map-container {
-            position: relative;
-            height: 100vh;
-            overflow: hidden;
-        }
-        
-        .map-header {
-            position: fixed;
-            top: 60px;
-            left: 0;
-            right: 0;
-            z-index: 1000;
-            background: rgba(0,0,0,0.7);
-            backdrop-filter: blur(10px);
-            padding: 1rem;
-            color: white;
-        }
-        
-        .legend {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            z-index: 1000;
-            background: rgba(0,0,0,0.8);
-            padding: 1rem;
-            border-radius: 8px;
-            color: white;
-            max-width: 300px;
-        }
-        
-        .legend-item {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            margin-bottom: 0.5rem;
-        }
-        
-        .legend-icon {
-            width: 20px;
-            height: 20px;
-            border-radius: 50%;
-            border: 2px solid white;
-        }
-        
-        .gm-style-iw {
-            color: black !important;
-        }
-        
-        .gm-style-iw-d {
-            color: black !important;
-        }
-    </style>
 </head>
 <body>
     <nav class="navbar">
@@ -88,24 +30,23 @@
         
         <div id="map"></div>
         
-        <div class="legend">
-            <h4>Legenda</h4>
+        <div class="legend" style="margin-top: 1rem; background: rgba(255,255,255,0.05); padding: 1rem; border-radius: 8px;">
+            <h4 style="color: #fff; margin-bottom: 0.5rem;">Legenda</h4>
             <div class="legend-item">
-                <div class="legend-icon" style="background: #4285F4;"></div>
-                <span>Apoiador</span>
+                <div class="legend-icon" style="background: #00ff88;"></div>
+                <span style="color: #fff;">Apoiador</span>
             </div>
-            <div class="legend-item">
-                <div class="legend-icon" style="background: #EA4335;"></div>
-                <span>Voluntário</span>
-            </div>
+            
         </div>
     </div>
 
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script src="js/alert.js"></script>
-    <script src="js/markerclusterer.js"></script>
     <script src="js/script.js"></script>
-    <script async defer
-        src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAvYQSf_rdU7hlXY7HULrnPmp60fWFi7Rw&libraries=marker&callback=initMap">
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            initMap();
+        });
     </script>
 </body>
 </html>

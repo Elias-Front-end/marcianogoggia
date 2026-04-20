@@ -1,9 +1,5 @@
 const API_URL = '/api';
 
-// Coordenadas padrão de São José dos Pinhais
-const SJP_CENTER = { lat: -25.5317, lng: -49.2921 };
-
-// Mapeamento de bairros para coordenadas mais precisas
 const BAIRROS_COORDS = {
     'Centro': [-25.5317, -49.2921],
     'Aeroporto': [-25.5084, -49.1755],
@@ -52,10 +48,6 @@ const BAIRROS_COORDS = {
     'Xaxim': [-25.4876, -49.3210]
 };
 
-let map = null;
-let markers = [];
-let markerClusterer = null;
-
 async function getApoiadores() {
     try {
         const response = await fetch(`${API_URL}/apoiadores`);
@@ -101,113 +93,59 @@ async function cadastrarApoiador(apoiador) {
 function getCoordsBairro(bairro) {
     if (BAIRROS_COORDS[bairro]) {
         const [lat, lng] = BAIRROS_COORDS[bairro];
-        return { lat, lng };
+        const randomOffset = () => (Math.random() - 0.5) * 0.002;
+        return [lat + randomOffset(), lng + randomOffset()];
     }
-    return SJP_CENTER;
+    return [-25.5317, -49.2921];
 }
 
-// Função global para inicializar o mapa (chamada pelo Google Maps API)
-window.initMap = function() {
-    if (document.getElementById('map')) {
-        // Criar o mapa
-        map = new google.maps.Map(document.getElementById('map'), {
-            center: SJP_CENTER,
-            zoom: 12,
-            mapTypeControl: false,
-            streetViewControl: false,
-            fullscreenControl: true
-        });
+let map = null;
+let markers = [];
 
-        // Carregar marcadores
+function initMap() {
+    if (document.getElementById('map')) {
+        map = L.map('map').setView([-25.5317, -49.2921], 12);
+
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; OpenStreetMap'
+        }).addTo(map);
+
         loadMarkers();
     }
-};
+}
+
+function createIcon(isVoluntario) {
+    const color = isVoluntario ? '#00d4ff' : '#00ff88';
+    return L.divIcon({
+        className: 'custom-marker',
+        html: `<div style="background:${color};width:24px;height:24px;border-radius:50%;border:3px solid white;box-shadow:0 2px 8px rgba(0,0,0,0.3);"></div>`,
+        iconSize: [24, 24],
+        iconAnchor: [12, 12]
+    });
+}
 
 async function loadMarkers() {
     const apoiadores = await getApoiadores();
     
-    // Limpar marcadores existentes
-    markers.forEach(marker => marker.setMap(null));
+    markers.forEach(m => map.removeLayer(m));
     markers = [];
 
-    // Criar novos marcadores
     apoiadores.forEach(apoiador => {
-        let lat, lng;
-        
-        // Usar coordenadas salvas se existirem
-        if (apoiador.latitude && apoiador.longitude) {
-            lat = apoiador.latitude;
-            lng = apoiador.longitude;
-        } else {
-            // Usar coordenadas do bairro
-            const coords = getCoordsBairro(apoiador.bairro);
-            lat = coords.lat;
-            lng = coords.lng;
-        }
+        const coords = getCoordsBairro(apoiador.bairro);
+        const marker = L.marker(coords).addTo(map);
 
-        // Criar marcador
-        const marker = new google.maps.Marker({
-            position: { lat, lng },
-            map: map,
-            title: apoiador.nome,
-            icon: {
-                url: 'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent(`
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <circle cx="12" cy="12" r="10" fill="#4285F4" stroke="white" stroke-width="2"/>
-                        <circle cx="12" cy="12" r="4" fill="white"/>
-                    </svg>
-                `),
-                scaledSize: new google.maps.Size(24, 24),
-                anchor: new google.maps.Point(12, 12)
-            }
-        });
+        marker.bindPopup(`
+            <div style="min-width:150px;">
+                <strong>${apoiador.nome}</strong><br>
+                <small>Rua: ${apoiador.rua}, ${apoiador.numero}</small><br>
+                <small>Bairro: ${apoiador.bairro}</small><br>
+                ${apoiador.telefone ? `<small>Tel: ${apoiador.telefone}</small><br>` : ''}
+                ${apoiador.email ? `<small>Email: ${apoiador.email}</small><br>` : ''}
+            </div>
+        `);
 
-        // Criar InfoWindow
-        const infoWindow = new google.maps.InfoWindow({
-            content: `
-                <div style="min-width: 200px; font-family: 'Inter', sans-serif;">
-                    <h3 style="margin: 0 0 10px 0; color: #1a1a2e; font-size: 16px;">${apoiador.nome}</h3>
-                    <p style="margin: 5px 0; color: #666; font-size: 14px;"><strong>Endereço:</strong> ${apoiador.rua}, ${apoiador.numero}</p>
-                    <p style="margin: 5px 0; color: #666; font-size: 14px;"><strong>Bairro:</strong> ${apoiador.bairro}</p>
-                    ${apoiador.telefone ? `<p style="margin: 5px 0; color: #666; font-size: 14px;"><strong>Telefone:</strong> ${apoiador.telefone}</p>` : ''}
-                    ${apoiador.email ? `<p style="margin: 5px 0; color: #666; font-size: 14px;"><strong>Email:</strong> ${apoiador.email}</p>` : ''}
-                    <p style="margin: 10px 0 5px 0; color: #999; font-size: 12px;">
-                        <strong>Cadastrado:</strong> ${apoiador.data_cadastro} às ${apoiador.hora_cadastro}
-                    </p>
-                </div>
-            `
-        });
-
-        // Adicionar evento de clique
-        marker.addListener('click', () => {
-            // Fechar outros infoWindows
-            markers.forEach(m => {
-                if (m.infoWindow) {
-                    m.infoWindow.close();
-                }
-            });
-            
-            infoWindow.open(map, marker);
-        });
-
-        // Guardar referência do InfoWindow no marker
-        marker.infoWindow = infoWindow;
-        
         markers.push(marker);
     });
-
-    // Configurar clusterização
-    if (typeof MarkerClusterer !== 'undefined') {
-        if (markerClusterer) {
-            markerClusterer.clearMarkers();
-        }
-        
-        markerClusterer = new MarkerClusterer(map, markers, {
-            imagePath: 'https://developers.google.com/maps/documentation/javascript/examples/markerclusterer/m',
-            gridSize: 60,
-            maxZoom: 15
-        });
-    }
 }
 
 async function updateCounter() {
@@ -250,83 +188,15 @@ function initCadastro() {
     }
 }
 
-// Função para buscar coordenadas (usada no admin)
-window.buscarCoordenadas = async function(rua, numero, bairro) {
-    const endereco = `${rua}, ${numero}, ${bairro}, São José dos Pinhais, Paraná, Brasil`;
-    
-    // Normalizar nome do bairro para busca
-    const bairroLower = bairro.toLowerCase().trim();
-    
-    try {
-        const encodedAddr = encodeURIComponent(endereco);
-        const response = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodedAddr}&limit=1`, {
-            headers: {
-                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
-            }
-        });
-        
-        const data = await response.json();
-        
-        if (data && data.length > 0) {
-            return {
-                lat: parseFloat(data[0].lat),
-                lng: parseFloat(data[0].lon)
-            };
-        }
-        
-        // Se não encontrar pelo endereço específico, usa coordenadas do bairro
-        if (bairro && BAIRROS_COORDS[bairroLower]) {
-            const coords = BAIRROS_COORDS[bairroLower];
-            return {
-                lat: coords[0],
-                lng: coords[1]
-            };
-        }
-        
-        // Se o bairro não existe no mapeamento, usa coordenadas padrão
-        return {
-            lat: SJP_CENTER.lat,
-            lng: SJP_CENTER.lng
-        };
-        
-    } catch (error) {
-        console.error('Erro ao buscar coordenadas:', error);
-        
-        // Usa coordenadas do bairro se disponível
-        if (bairro && BAIRROS_COORDS[bairroLower]) {
-            const coords = BAIRROS_COORDS[bairroLower];
-            return {
-                lat: coords[0],
-                lng: coords[1]
-            };
-        }
-        
-        return {
-            lat: SJP_CENTER.lat,
-            lng: SJP_CENTER.lng
-        };
-    }
-};
-
 document.addEventListener('DOMContentLoaded', function() {
     initCadastro();
-    
-    // Se estiver na página do mapa e Google Maps não estiver carregado ainda
     if (document.getElementById('map')) {
-        // Aguardar o Google Maps carregar
-        const checkGoogleMaps = setInterval(() => {
-            if (typeof google !== 'undefined' && google.maps) {
-                clearInterval(checkGoogleMaps);
-                initMap();
-            }
-        }, 100);
-        
-        // Timeout para evitar loop infinito
-        setTimeout(() => {
-            clearInterval(checkGoogleMaps);
-            if (typeof google === 'undefined') {
-                console.error('Google Maps não foi carregado');
-            }
-        }, 10000);
+        initMap();
     }
+    
+    // Demonstração dos alertas (remover em produção)
+    // Alert.success('Sistema de alertas configurado com sucesso!');
+    // Alert.info('Esta é uma mensagem informativa.');
+    // Alert.warning('Esta é uma mensagem de aviso.');
+    // Alert.error('Esta é uma mensagem de erro.');
 });
