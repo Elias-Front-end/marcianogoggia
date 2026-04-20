@@ -1,7 +1,7 @@
 const API_URL = '/api';
 
 // Coordenadas padrão de São José dos Pinhais
-const SJP_CENTER = [-25.5317, -49.2921];
+const SJP_CENTER = { lat: -25.5317, lng: -49.2921 };
 
 // Mapeamento de bairros para coordenadas mais precisas
 const BAIRROS_COORDS = {
@@ -52,6 +52,10 @@ const BAIRROS_COORDS = {
     'Xaxim': [-25.4876, -49.3210]
 };
 
+let map = null;
+let markers = [];
+let markerClusterer = null;
+
 async function getApoiadores() {
     try {
         const response = await fetch(`${API_URL}/apoiadores`);
@@ -96,69 +100,114 @@ async function cadastrarApoiador(apoiador) {
 
 function getCoordsBairro(bairro) {
     if (BAIRROS_COORDS[bairro]) {
-        return BAIRROS_COORDS[bairro];
+        const [lat, lng] = BAIRROS_COORDS[bairro];
+        return { lat, lng };
     }
     return SJP_CENTER;
 }
 
-function createIcon() {
-    return L.divIcon({
-        className: 'custom-marker',
-        html: `<div style="background:#4285F4;width:24px;height:24px;border-radius:50%;border:3px solid white;box-shadow:0 2px 8px rgba(0,0,0,0.3);display:flex;align-items:center;justify-content:center;color:#fff;font-size:12px;font-weight:bold;">✓</div>`,
-        iconSize: [24, 24],
-        iconAnchor: [12, 12]
-    });
-}
-
-let map = null;
-let markers = [];
-
-function initMap() {
+// Função global para inicializar o mapa (chamada pelo Google Maps API)
+window.initMap = function() {
     if (document.getElementById('map')) {
-        map = L.map('map').setView(SJP_CENTER, 12);
+        // Criar o mapa
+        map = new google.maps.Map(document.getElementById('map'), {
+            center: SJP_CENTER,
+            zoom: 12,
+            mapTypeControl: false,
+            streetViewControl: false,
+            fullscreenControl: true
+        });
 
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            attribution: '© OpenStreetMap contributors'
-        }).addTo(map);
-
+        // Carregar marcadores
         loadMarkers();
     }
-}
+};
 
 async function loadMarkers() {
     const apoiadores = await getApoiadores();
     
-    markers.forEach(marker => map.removeLayer(marker));
+    // Limpar marcadores existentes
+    markers.forEach(marker => marker.setMap(null));
     markers = [];
 
+    // Criar novos marcadores
     apoiadores.forEach(apoiador => {
-        let coords;
+        let lat, lng;
         
         // Usar coordenadas salvas se existirem
         if (apoiador.latitude && apoiador.longitude) {
-            coords = [parseFloat(apoiador.latitude), parseFloat(apoiador.longitude)];
+            lat = apoiador.latitude;
+            lng = apoiador.longitude;
         } else {
             // Usar coordenadas do bairro
-            coords = getCoordsBairro(apoiador.bairro);
+            const coords = getCoordsBairro(apoiador.bairro);
+            lat = coords.lat;
+            lng = coords.lng;
         }
 
-        const marker = L.marker(coords, { icon: createIcon() }).addTo(map);
+        // Criar marcador
+        const marker = new google.maps.Marker({
+            position: { lat, lng },
+            map: map,
+            title: apoiador.nome,
+            icon: {
+                url: 'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent(`
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <circle cx="12" cy="12" r="10" fill="#4285F4" stroke="white" stroke-width="2"/>
+                        <circle cx="12" cy="12" r="4" fill="white"/>
+                    </svg>
+                `),
+                scaledSize: new google.maps.Size(24, 24),
+                anchor: new google.maps.Point(12, 12)
+            }
+        });
 
-        marker.bindPopup(`
-            <div style="min-width: 200px; font-family: 'Inter', sans-serif;">
-                <h3 style="margin: 0 0 10px 0; color: #1a1a2e; font-size: 16px;">${apoiador.nome}</h3>
-                <p style="margin: 5px 0; color: #666; font-size: 14px;"><strong>Endereço:</strong> ${apoiador.rua}, ${apoiador.numero}</p>
-                <p style="margin: 5px 0; color: #666; font-size: 14px;"><strong>Bairro:</strong> ${apoiador.bairro}</p>
-                ${apoiador.telefone ? `<p style="margin: 5px 0; color: #666; font-size: 14px;"><strong>Telefone:</strong> ${apoiador.telefone}</p>` : ''}
-                ${apoiador.email ? `<p style="margin: 5px 0; color: #666; font-size: 14px;"><strong>Email:</strong> ${apoiador.email}</p>` : ''}
-                <p style="margin: 10px 0 5px 0; color: #999; font-size: 12px;">
-                    <strong>Cadastrado:</strong> ${apoiador.data_cadastro} às ${apoiador.hora_cadastro}
-                </p>
-            </div>
-        `);
+        // Criar InfoWindow
+        const infoWindow = new google.maps.InfoWindow({
+            content: `
+                <div style="min-width: 200px; font-family: 'Inter', sans-serif;">
+                    <h3 style="margin: 0 0 10px 0; color: #1a1a2e; font-size: 16px;">${apoiador.nome}</h3>
+                    <p style="margin: 5px 0; color: #666; font-size: 14px;"><strong>Endereço:</strong> ${apoiador.rua}, ${apoiador.numero}</p>
+                    <p style="margin: 5px 0; color: #666; font-size: 14px;"><strong>Bairro:</strong> ${apoiador.bairro}</p>
+                    ${apoiador.telefone ? `<p style="margin: 5px 0; color: #666; font-size: 14px;"><strong>Telefone:</strong> ${apoiador.telefone}</p>` : ''}
+                    ${apoiador.email ? `<p style="margin: 5px 0; color: #666; font-size: 14px;"><strong>Email:</strong> ${apoiador.email}</p>` : ''}
+                    <p style="margin: 10px 0 5px 0; color: #999; font-size: 12px;">
+                        <strong>Cadastrado:</strong> ${apoiador.data_cadastro} às ${apoiador.hora_cadastro}
+                    </p>
+                </div>
+            `
+        });
 
+        // Adicionar evento de clique
+        marker.addListener('click', () => {
+            // Fechar outros infoWindows
+            markers.forEach(m => {
+                if (m.infoWindow) {
+                    m.infoWindow.close();
+                }
+            });
+            
+            infoWindow.open(map, marker);
+        });
+
+        // Guardar referência do InfoWindow no marker
+        marker.infoWindow = infoWindow;
+        
         markers.push(marker);
     });
+
+    // Configurar clusterização
+    if (typeof MarkerClusterer !== 'undefined') {
+        if (markerClusterer) {
+            markerClusterer.clearMarkers();
+        }
+        
+        markerClusterer = new MarkerClusterer(map, markers, {
+            imagePath: 'https://developers.google.com/maps/documentation/javascript/examples/markerclusterer/m',
+            gridSize: 60,
+            maxZoom: 15
+        });
+    }
 }
 
 async function updateCounter() {
@@ -185,12 +234,6 @@ function initCadastro() {
             };
 
             try {
-                // Buscar coordenadas automaticamente
-                const coords = await buscarCoordenadas(apoiador.rua, apoiador.numero, apoiador.bairro);
-                
-                apoiador.latitude = coords.lat;
-                apoiador.longitude = coords.lng;
-                
                 await cadastrarApoiador(apoiador);
                 
                 Alert.success('Cadastro realizado com sucesso!');
@@ -208,7 +251,7 @@ function initCadastro() {
 }
 
 // Função para buscar coordenadas (usada no admin)
-async function buscarCoordenadas(rua, numero, bairro) {
+window.buscarCoordenadas = async function(rua, numero, bairro) {
     const endereco = `${rua}, ${numero}, ${bairro}, São José dos Pinhais, Paraná, Brasil`;
     
     // Normalizar nome do bairro para busca
@@ -242,8 +285,8 @@ async function buscarCoordenadas(rua, numero, bairro) {
         
         // Se o bairro não existe no mapeamento, usa coordenadas padrão
         return {
-            lat: SJP_CENTER[0],
-            lng: SJP_CENTER[1]
+            lat: SJP_CENTER.lat,
+            lng: SJP_CENTER.lng
         };
         
     } catch (error) {
@@ -259,18 +302,31 @@ async function buscarCoordenadas(rua, numero, bairro) {
         }
         
         return {
-            lat: SJP_CENTER[0],
-            lng: SJP_CENTER[1]
+            lat: SJP_CENTER.lat,
+            lng: SJP_CENTER.lng
         };
     }
-}
+};
 
 document.addEventListener('DOMContentLoaded', function() {
     initCadastro();
+    
+    // Se estiver na página do mapa e Google Maps não estiver carregado ainda
     if (document.getElementById('map')) {
-        initMap();
+        // Aguardar o Google Maps carregar
+        const checkGoogleMaps = setInterval(() => {
+            if (typeof google !== 'undefined' && google.maps) {
+                clearInterval(checkGoogleMaps);
+                initMap();
+            }
+        }, 100);
+        
+        // Timeout para evitar loop infinito
+        setTimeout(() => {
+            clearInterval(checkGoogleMaps);
+            if (typeof google === 'undefined') {
+                console.error('Google Maps não foi carregado');
+            }
+        }, 10000);
     }
 });
-
-// Torna a função disponível globalmente para o admin.html
-window.buscarCoordenadas = buscarCoordenadas;
