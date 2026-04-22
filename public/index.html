@@ -3,120 +3,276 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cadastro Eleitores - Marciano Goggia</title>
-    <link rel="stylesheet" href="css/style.css">
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
+    <title>Marciano Goggia - Intelligence & Engagement</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800;900&display=swap">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        :root {
+            --primary: #00d4ff;
+            --secondary: #00ff88;
+            --bg: #000000;
+            --glass: rgba(255, 255, 255, 0.03);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            font-family: 'Inter', sans-serif; 
+            background: var(--bg); 
+            color: #fff; 
+            overflow: hidden;
+            height: 100vh;
+        }
+
+        /* Hero Background with Space Earth */
+        .hero-bg {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), 
+                        url('https://images.unsplash.com/photo-1451187580459-43490279c0fa?q=80&w=2072&auto=format&fit=crop') no-repeat center center;
+            background-size: cover;
+            z-index: -2;
+            filter: brightness(0.7);
+        }
+
+        #network-canvas {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            z-index: -1;
+            pointer-events: none;
+            opacity: 0.8;
+        }
+
+        .navbar { 
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 2rem 4rem; 
+            position: fixed; top: 0; left: 0; right: 0; z-index: 1000;
+        }
+        
+        .logo-container { display: flex; align-items: center; gap: 10px; }
+        .logo-icon { 
+            background: var(--primary); color: #000; padding: 5px; border-radius: 4px;
+            display: flex; align-items: center; justify-content: center;
+        }
+        .logo-text { font-size: 1.2rem; font-weight: 800; letter-spacing: -0.5px; }
+
+        .nav-links { display: flex; gap: 2.5rem; position: absolute; left: 50%; transform: translateX(-50%); }
+        .nav-links a { 
+            color: rgba(255, 255, 255, 0.6); text-decoration: none; font-size: 0.8rem; font-weight: 800;
+            letter-spacing: 2px; text-transform: uppercase; transition: all 0.3s;
+            position: relative; padding-bottom: 5px;
+        }
+        .nav-links a:hover, .nav-links a.active { color: #fff; }
+        .nav-links a.active::after {
+            content: ''; position: absolute; bottom: 0; left: 0; width: 100%; height: 2px; background: var(--primary);
+        }
+
+        .btn-connect {
+            border: 1px solid rgba(255,255,255,0.2); background: transparent; color: #fff;
+            padding: 0.6rem 1.8rem; border-radius: 4px; font-size: 0.75rem; font-weight: 800;
+            letter-spacing: 2px; cursor: pointer; transition: all 0.3s;
+        }
+        .btn-connect:hover { background: #fff; color: #000; }
+
+        /* Sync Status UI */
+        .sync-status {
+            position: fixed; top: 120px; right: 4rem; font-size: 0.7rem; font-weight: 800;
+            letter-spacing: 2px; color: rgba(255,255,255,0.4); display: flex; align-items: center; gap: 10px;
+        }
+        .sync-status span { color: var(--primary); }
+        .status-dots { display: flex; gap: 4px; }
+        .dot { width: 4px; height: 4px; border-radius: 50%; background: rgba(255,255,255,0.2); }
+        .dot.active { background: var(--primary); box-shadow: 0 0 8px var(--primary); animation: pulse 1.5s infinite; }
+
+        @keyframes pulse { 0% { opacity: 0.4; } 50% { opacity: 1; } 100% { opacity: 0.4; } }
+
+        .hero {
+            height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center;
+            text-align: center; padding: 0 2rem;
+        }
+
+        .hero-subtitle {
+            font-size: 0.85rem; font-weight: 800; letter-spacing: 8px; color: var(--primary);
+            text-transform: uppercase; margin-bottom: 2rem;
+        }
+
+        .hero-title {
+            font-size: 5.5rem; font-weight: 900; line-height: 1; margin-bottom: 2rem;
+            letter-spacing: -2px; text-transform: uppercase;
+        }
+
+        .hero-desc {
+            max-width: 650px; font-size: 1.1rem; font-weight: 300; color: rgba(255,255,255,0.6);
+            margin-bottom: 2.5rem; line-height: 1.8;
+        }
+
+        /* Intelligence Metrics HUD */
+        .intel-metrics {
+            display: flex; gap: 3rem; margin-bottom: 4rem; justify-content: center;
+        }
+        .metric-box { text-align: left; position: relative; padding-left: 15px; border-left: 1px solid rgba(0, 212, 255, 0.3); }
+        .metric-box .m-label { font-size: 0.65rem; font-weight: 800; color: rgba(255,255,255,0.4); text-transform: uppercase; letter-spacing: 2px; }
+        .metric-box .m-value { font-size: 1.8rem; font-weight: 900; color: #fff; margin-top: 5px; font-variant-numeric: tabular-nums; }
+        .metric-box .m-value span { font-size: 0.8rem; color: var(--primary); margin-left: 5px; }
+
+        .hero-actions { display: flex; gap: 1.5rem; }
+        
+        .btn-action {
+            padding: 1rem 2.5rem; border-radius: 4px; font-weight: 800; letter-spacing: 2px;
+            text-decoration: none; font-size: 0.85rem; transition: all 0.3s; text-transform: uppercase;
+        }
+        .btn-explorar { background: var(--primary); color: #000; }
+        .btn-explorar:hover { background: #00b8e6; transform: translateY(-2px); box-shadow: 0 10px 20px rgba(0,212,255,0.2); }
+        
+        .btn-relatorios { border: 1px solid rgba(255,255,255,0.2); color: #fff; }
+        .btn-relatorios:hover { background: rgba(255,255,255,0.1); transform: translateY(-2px); }
+
+        /* Deco Elements */
+        .lat-info {
+            position: fixed; bottom: 4rem; left: 4rem; font-size: 0.75rem; color: var(--primary);
+            font-weight: 700; letter-spacing: 2px;
+        }
+        .lat-info::after {
+            content: ''; position: absolute; bottom: -8px; left: 0; width: 60px; height: 1px; background: rgba(0,212,255,0.3);
+        }
+
+        /* Mobile Adjustments */
+        @media (max-width: 768px) {
+            .navbar { padding: 1.5rem; }
+            .nav-links { display: none; }
+            .hero-title { font-size: 3rem; }
+            .hero-actions { flex-direction: column; width: 100%; max-width: 300px; }
+            .sync-status, .lat-info { display: none; }
+        }
+    </style>
 </head>
 <body>
+    <div class="hero-bg"></div>
+    <canvas id="network-canvas"></canvas>
+
     <nav class="navbar">
-        <div class="logo">
-            <span class="candidate-name">Marciano Goggia</span>
-            <span class="candidate-role">Candidato à Prefeitura</span>
+        <div class="logo-container">
+            <div class="logo-icon"><i data-lucide="zap" style="width:16px; height:16px;"></i></div>
+            <div class="logo-text">Marciano Goggia</div>
         </div>
         <div class="nav-links">
-            <a href="index.html" class="active">Cadastro</a>
             <a href="mapa.html">Mapa</a>
             <a href="dashboard.html">Dashboard</a>
             <a href="admin.html">Gerenciar</a>
         </div>
     </nav>
 
-    <div class="container">
-        <div class="form-section">
-            <h1>Cadastro de Apoiador</h1>
-            <p class="subtitle">Preencha os dados para registrar seu apoio</p>
-
-            <form id="cadastroForm" class="cadastro-form">
-                <div class="form-group">
-                    <label for="nome">Nome Completo *</label>
-                    <input type="text" id="nome" name="nome" required placeholder="Digite seu nome completo">
-                </div>
-
-                <div class="form-group">
-                    <label for="rua">Rua/Avenida *</label>
-                    <input type="text" id="rua" name="rua" required placeholder="Nome da rua ou avenida">
-                </div>
-
-                <div class="form-group">
-                    <label for="numero">Número *</label>
-                    <input type="text" id="numero" name="numero" required placeholder="Número da residência">
-                </div>
-
-                <div class="form-group">
-                    <label for="bairro">Bairro *</label>
-                    <select id="bairro" name="bairro" required>
-                        <option value="">Selecione o bairro</option>
-                        <option value="Centro">Centro</option>
-                        <option value="Aeroporto">Aeroporto</option>
-                        <option value="Alto da Boa Vista">Alto da Boa Vista</option>
-                        <option value="Barra do João José">Barra do João José</option>
-                        <option value="Bela Vista">Bela Vista</option>
-                        <option value="Boa Vista">Boa Vista</option>
-                        <option value="Brasil">Brasil</option>
-                        <option value="Cachoeirinha">Cachoeirinha</option>
-                        <option value="Campo Largo">Campo Largo</option>
-                        <option value="Campus">Campus</option>
-                        <option value="Cidade Industrial">Cidade Industrial</option>
-                        <option value="Colônia Rio Grande">Colônia Rio Grande</option>
-                        <option value="Cruzeiro">Cruzeiro</option>
-                        <option value="Eucaliptos">Eucaliptos</option>
-                        <option value="Guabirotuba">Guabirotuba</option>
-                        <option value="Inocência">Inocência</option>
-                        <option value="Ipê">Ipê</option>
-                        <option value="Jardim">Jardim</option>
-                        <option value="Jardim dos Eucaliptos">Jardim dos Eucaliptos</option>
-                        <option value="Jardim Kennedy">Jardim Kennedy</option>
-                        <option value="Jardim Maria Helena">Jardim Maria Helena</option>
-                        <option value="Muricy">Muricy</option>
-                        <option value="Oliveira">Oliveira</option>
-                        <option value="Parque Industrial">Parque Industrial</option>
-                        <option value="Parque São Pedro">Parque São Pedro</option>
-                        <option value="Pedra Grande">Pedra Grande</option>
-                        <option value="Pineville">Pineville</option>
-                        <option value="Ponta Grossa">Ponta Grossa</option>
-                        <option value="Portão">Portão</option>
-                        <option value="Possidônio">Possidônio</option>
-                        <option value="Rio Pequeno">Rio Pequeno</option>
-                        <option value="Santo Antônio">Santo Antônio</option>
-                        <option value="São Cristóvão">São Cristóvão</option>
-                        <option value="São Francisco">São Francisco</option>
-                        <option value="São João">São João</option>
-                        <option value="São Pedro">São Pedro</option>
-                        <option value="Seara">Seara</option>
-                        <option value="Taboão">Taboão</option>
-                        <option value="Tancredo">Tancredo</option>
-                        <option value="Vila Formosa">Vila Formosa</option>
-                        <option value="Vila Guarani">Vila Guarani</option>
-                        <option value="Vila Izabel">Vila Izabel</option>
-                        <option value="Vila Residencial">Vila Residencial</option>
-                        <option value="Vila Velha">Vila Velha</option>
-                        <option value="Xaxim">Xaxim</option>
-                    </select>
-                </div>
-
-                <div class="form-group">
-                    <label for="telefone">Telefone (Opcional)</label>
-                    <input type="tel" id="telefone" name="telefone" placeholder="(41) 99999-9999">
-                </div>
-
-                <div class="form-group">
-                    <label for="email">Email (Opcional)</label>
-                    <input type="email" id="email" name="email" placeholder="seu@email.com">
-                </div>
-
-                <button type="submit" class="btn-submit">Cadastrar</button>
-            </form>
-        </div>
-
-        <div class="stats-card">
-            <h3>Total de Apoiadores</h3>
-            <div class="stats-number" id="totalApoiadores">0</div>
-            <p class="stats-subtitle">cadastrados até agora</p>
+    <div class="sync-status">
+        Sincronização: <span>Ativa</span>
+        <div class="status-dots">
+            <div class="dot active"></div>
+            <div class="dot"></div>
+            <div class="dot"></div>
         </div>
     </div>
 
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-    <script src="js/alert.js"></script>
-    <script src="js/script.js"></script>
+    <section class="hero">
+        <div class="hero-subtitle">Inteligência & Engajamento</div>
+        <h1 class="hero-title">Marciano Goggia</h1>
+        <p class="hero-desc">
+            Utilizando visualização de dados de alta fidelidade e conectividade territorial para 
+            navegar na fronteira digital. Inteligência estratégica para tomada de decisões profissionais.
+        </p>
+
+        <div class="intel-metrics">
+            <div class="metric-box">
+                <div class="m-label">Conexões Ativas</div>
+                <div class="m-value" id="count-nodes">000 <span>Online</span></div>
+            </div>
+            <div class="metric-box">
+                <div class="m-label">Setores Cobertos</div>
+                <div class="m-value" id="count-sectors">00 <span>Ativos</span></div>
+            </div>
+            <div class="metric-box">
+                <div class="m-label">Integridade da Rede</div>
+                <div class="m-value">100 <span>%</span></div>
+            </div>
+        </div>
+        
+        <div class="hero-actions">
+            <a href="mapa.html" class="btn-action btn-explorar">Explorar Mapa</a>
+            <a href="dashboard.html" class="btn-action btn-relatorios">Relatórios</a>
+        </div>
+    </section>
+
+    <div class="lat-info">LAT: 23.5585 S</div>
+
+    <script>
+        lucide.createIcons();
+        
+        // Fetch real stats
+        fetch('/api/stats')
+            .then(r => r.json())
+            .then(d => {
+                document.getElementById('count-nodes').innerHTML = `${(d.total || 0).toString().padStart(3, '0')} <span>Online</span>`;
+                document.getElementById('count-sectors').innerHTML = `${(d.bairros || 0).toString().padStart(2, '0')} <span>Ativos</span>`;
+            });
+
+        // Update Lat Info dynamically
+        setInterval(() => {
+            const randomLat = (23 + Math.random()).toFixed(4);
+            document.querySelector('.lat-info').textContent = `LAT: ${randomLat} S`;
+        }, 10000);
+
+        // Network Animation Effect
+        const canvas = document.getElementById('network-canvas');
+        const ctx = canvas.getContext('2d');
+        let particles = [];
+        const particleCount = 100;
+        
+        function initCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            particles = [];
+            for (let i = 0; i < particleCount; i++) {
+                particles.push({
+                    x: Math.random() * canvas.width,
+                    y: Math.random() * canvas.height,
+                    vx: (Math.random() - 0.5) * 0.4,
+                    vy: (Math.random() - 0.5) * 0.4
+                });
+            }
+        }
+
+        function draw() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.strokeStyle = 'rgba(0, 212, 255, 0.3)';
+            ctx.fillStyle = 'rgba(0, 212, 255, 0.5)';
+            
+            for (let i = 0; i < particles.length; i++) {
+                let p = particles[i];
+                p.x += p.vx;
+                p.y += p.vy;
+                
+                if (p.x < 0 || p.x > canvas.width) p.vx *= -1;
+                if (p.y < 0 || p.y > canvas.height) p.vy *= -1;
+                
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, 2.5, 0, Math.PI * 2);
+                ctx.fill();
+                
+                for (let j = i + 1; j < particles.length; j++) {
+                    let p2 = particles[j];
+                    let dist = Math.sqrt((p.x - p2.x) ** 2 + (p.y - p2.y) ** 2);
+                    if (dist < 180) {
+                        ctx.lineWidth = (1 - dist / 180) * 1.5;
+                        ctx.beginPath();
+                        ctx.moveTo(p.x, p.y);
+                        ctx.lineTo(p2.x, p2.y);
+                        ctx.stroke();
+                    }
+                }
+            }
+            requestAnimationFrame(draw);
+        }
+
+        window.addEventListener('resize', initCanvas);
+        initCanvas();
+        draw();
+    </script>
 </body>
 </html>

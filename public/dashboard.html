@@ -6,18 +6,51 @@
     <title>Dashboard - Marciano Goggia</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.4.1/dist/MarkerCluster.css">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.4.1/dist/MarkerCluster.Default.css">
     <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         html, body { height: 100%; overflow: hidden; font-family: 'Inter', sans-serif; background: #0a0e17; color: #fff; font-size: 12px; }
+        
+        @keyframes pulsante {
+            0% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.2); opacity: 0.7; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+        
+        .marker-pulsante {
+            animation: pulsante 1s infinite;
+        }
         
         .navbar { 
             position: fixed; top: 0; left: 0; right: 0; z-index: 1000;
             display: flex; justify-content: space-between; padding: 0.5rem 1rem; 
             background: rgba(0,0,0,0.7); backdrop-filter: blur(10px);
         }
-        .logo { font-size: 1.1rem; font-weight: 700; color: #00d4ff; }
-        .nav { display: flex; gap: 0.5rem; }
+        .logo { font-size: 1.8rem; font-weight: 800; color: #00d4ff; letter-spacing: 0.02em; }
+        .btn-voltar {
+            color: rgba(255,255,255,0.7);
+            text-decoration: none;
+            padding: 0.6rem 1.2rem;
+            border-radius: 12px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            border: 1px solid rgba(255,255,255,0.1);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(255,255,255,0.05);
+            backdrop-filter: blur(10px);
+        }
+        .btn-voltar:hover { 
+            background: rgba(255,255,255,0.12); 
+            color: #fff; 
+            border-color: #00d4ff;
+            transform: translateX(-5px);
+        }
+        .nav { display: none; }
         .nav a { color: #fff; text-decoration: none; padding: 0.3rem 0.7rem; border-radius: 6px; font-size: 0.75rem; }
         .nav a.active { background: rgba(0,212,255,0.2); color: #00d4ff; }
         
@@ -36,17 +69,42 @@
         }
         .filters label { font-size: 0.6rem; color: rgba(255,255,255,0.5); margin-right: 0.3rem; }
         
-        .stats-inline { 
-            display: flex; 
-            gap: 15px; 
-            justify-content: space-around;
-            padding-bottom: 10px;
+        .stats-grid { 
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            padding-bottom: 15px;
             border-bottom: 1px solid rgba(255,255,255,0.1);
-            margin-bottom: 10px;
+            margin-bottom: 15px;
         }
-        .stat-item { text-align: center; }
-        .stat-item span { display: block; font-size: 1.2rem; font-weight: 700; color: #00d4ff; }
-        .stat-item label { display: block; font-size: 0.6rem; color: rgba(255,255,255,0.6); }
+        .stat-card { 
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.05);
+            padding: 12px;
+            border-radius: 12px;
+            text-align: center;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .stat-card:hover {
+            background: rgba(0,212,255,0.05);
+            border-color: rgba(0,212,255,0.2);
+            transform: translateY(-2px);
+        }
+        .stat-value { 
+            display: block;
+            font-size: 1.6rem;
+            font-weight: 800;
+            color: #00d4ff;
+            text-shadow: 0 0 15px rgba(0,212,255,0.3);
+        }
+        .stat-label { 
+            display: block;
+            font-size: 0.6rem;
+            color: rgba(255,255,255,0.5);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-top: 4px;
+        }
         
         .btn { 
             padding: 0.3rem 0.8rem; border-radius: 4px; border: 1px solid #00d4ff; 
@@ -61,24 +119,54 @@
         
         .charts-overlay {
             position: fixed;
-            top: 80px;
-            left: 15px;
-            width: 350px;
+            top: 100px;
+            left: 25px;
+            width: 380px;
             display: flex;
             flex-direction: column;
-            gap: 10px;
+            gap: 15px;
             z-index: 500;
-            background: linear-gradient(180deg, rgba(10,14,23,0.95) 0%, rgba(10,14,23,0.7) 50%, rgba(10,14,23,0.4) 100%);
-            padding: 15px;
-            border-radius: 16px;
-            max-height: calc(100vh - 100px);
+            background: rgba(10, 14, 23, 0.75);
+            backdrop-filter: blur(25px);
+            padding: 20px;
+            border-radius: 24px;
+            border: 1px solid rgba(255,255,255,0.08);
+            max-height: calc(100vh - 150px);
             overflow-y: auto;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.5);
         }
         
         .chart-widget {
-            background: transparent;
-            border: none;
-            padding: 0.5rem;
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 20px;
+            padding: 1.5rem;
+            margin-bottom: 10px;
+            transition: all 0.3s ease;
+        }
+        .chart-widget:hover {
+            border-color: rgba(0, 212, 255, 0.3);
+            background: rgba(255,255,255,0.05);
+        }
+        
+        #table-body tr { cursor: pointer; transition: background 0.2s; }
+        #table-body tr:hover { background: rgba(0, 212, 255, 0.1) !important; }
+        
+        .marker-glow {
+            box-shadow: 0 0 15px #00ff88, 0 0 30px rgba(0,255,136,0.3);
+        }
+        
+        /* Marker Cluster Custom Style */
+        .pr-cluster {
+            background: rgba(0, 212, 255, 0.2);
+            border: 2px solid #00d4ff;
+            border-radius: 50%;
+            color: #fff;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(5px);
         }
         .chart-widget .widget-header {
             display: flex;
@@ -89,25 +177,53 @@
             border-bottom: 1px solid rgba(255,255,255,0.1);
         }
         
-        .chart-widget h3 { font-size: 0.75rem; color: #00d4ff; margin-bottom: 5px; }
+        .chart-widget h3 { font-size: 0.8rem; color: #00d4ff; margin-bottom: 8px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; }
         .chart-widget .chart-container { height: 280px; }
         
         .leaflet-popup-content-wrapper {
-            background: rgba(10, 14, 23, 0.95); color: #fff;
-            border-radius: 8px;
+            background: rgba(10, 14, 23, 0.95); 
+            color: #fff;
+            border-radius: 12px;
+            border: 1px solid rgba(0, 212, 255, 0.2);
+            backdrop-filter: blur(10px);
         }
         .leaflet-popup-tip { background: rgba(10, 14, 23, 0.95); }
+
+        /* Nova Legenda do Mapa */
+        .map-legend {
+            background: rgba(10, 14, 23, 0.8);
+            padding: 15px;
+            border-radius: 16px;
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            font-size: 11px;
+            line-height: 1.6;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.8);
+            pointer-events: auto;
+            backdrop-filter: blur(20px);
+        }
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 6px;
+        }
+        .legend-color {
+            width: 14px;
+            height: 14px;
+            border-radius: 3px;
+        }
     </style>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
 </head>
 <body>
     <nav class="navbar">
-        <div class="logo">Marciano Goggia</div>
-        <div class="nav">
-            <a href="index.html">Cadastro</a>
-            <a href="mapa.html">Mapa</a>
-            <a href="dashboard.html" class="active">Dashboard</a>
-            <a href="admin.html">Gerenciar</a>
-        </div>
+        <div class="logo">Dashboard Métricas</div>
+        <a href="index.html" class="btn-voltar">
+            <i data-lucide="arrow-left" style="width:16px; height:16px;"></i>
+            Voltar
+        </a>
     </nav>
     
     <div class="top-bar">
@@ -125,15 +241,46 @@
     
     <div class="charts-overlay">
         <div style="color:#fff;padding:10px;text-align:center;" id="loading">Carregando...</div>
-        <div class="stats-inline">
-            <div class="stat-item"><span id="t1">0</span><label>Total</label></div>
-            <div class="stat-item"><span id="t4">0</span><label>Bairros</label></div>
-        </div>
-        <div class="chart-widget" id="widget1">
-            <div class="widget-header">
-                <h3>Apoiadores por Bairro</h3>
+        <div class="stats-grid">
+            <div class="stat-card">
+                <i data-lucide="users" style="width: 14px; height: 14px; color: #00d4ff; margin-bottom: 5px;"></i>
+                <span class="stat-value" id="t1">0</span>
+                <span class="stat-label">Total</span>
             </div>
-            <div class="chart-container" id="c1"></div>
+            <div class="stat-card">
+                <i data-lucide="zap" style="width: 14px; height: 14px; color: #00ff88; margin-bottom: 5px;"></i>
+                <span class="stat-value" id="t2">0</span>
+                <span class="stat-label">Hoje</span>
+            </div>
+            <div class="stat-card">
+                <i data-lucide="bar-chart-3" style="width: 14px; height: 14px; color: #ffc107; margin-bottom: 5px;"></i>
+                <span class="stat-value" id="t3">0</span>
+                <span class="stat-label">Média</span>
+            </div>
+            <div class="stat-card">
+                <i data-lucide="map-pin" style="width: 14px; height: 14px; color: #e91e63; margin-bottom: 5px;"></i>
+                <span class="stat-value" id="t4">0</span>
+                <span class="stat-label">Bairros</span>
+            </div>
+        </div>
+        <div class="chart-widget" id="widget_table">
+            <div class="widget-header">
+                <h3>Ranking de Engajamento</h3>
+            </div>
+            <div style="max-height: 200px; overflow-y: auto; background: rgba(255,255,255,0.05); border-radius: 8px; padding: 5px;">
+                <table style="width: 100%; border-collapse: collapse; font-size: 10px; color: #fff;">
+                    <thead style="position: sticky; top: 0; background: #1a1f2e; color: #00d4ff;">
+                        <tr>
+                            <th style="text-align: left; padding: 5px; border-bottom: 1px solid rgba(255,255,255,0.1);">Bairro</th>
+                            <th style="text-align: center; padding: 5px; border-bottom: 1px solid rgba(255,255,255,0.1);">Qtd</th>
+                            <th style="text-align: right; padding: 5px; border-bottom: 1px solid rgba(255,255,255,0.1);">%</th>
+                        </tr>
+                    </thead>
+                    <tbody id="table-body">
+                        <!-- Populated by JS -->
+                    </tbody>
+                </table>
+            </div>
         </div>
         <div class="chart-widget" id="widget2">
             <div class="widget-header">
@@ -144,6 +291,8 @@
     </div>
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://unpkg.com/leaflet.markercluster@1.4.1/dist/leaflet.markercluster.js"></script>
+    <script src="js/leaflet-heat.js"></script>
     <script src="js/alert.js"></script>
     <script>
         var dados = [];
@@ -155,51 +304,69 @@
         var SJP_CENTER = [-25.5317, -49.2921];
         
         var BAIRROS_COORDS = {
+            'Academia': [-25.5189, -49.2321],
+            'Afonso Pena': [-25.5423, -49.2756],
+            'Águas Belas': [-25.5567, -49.3012],
+            'Aristocrata': [-25.5298, -49.2654],
+            'Arujá': [-25.5489, -49.3123],
+            'Aviação': [-25.5084, -49.1755],
+            'Barro Preto': [-25.4765, -49.2567],
+            'Bom Jesus': [-25.5123, -49.3234],
+            'Boneca do Iguaçu': [-25.5234, -49.2890],
+            'Borda do Campo': [-25.4876, -49.3345],
+            'Braga': [-25.4534, -49.3210],
+            'Campo Largo da Roseira': [-25.4423, -49.3156],
             'Centro': [-25.5317, -49.2921],
-            'Aeroporto': [-25.5084, -49.1755],
-            'Alto da Boa Vista': [-25.5521, -49.3210],
-            'Barra do João José': [-25.4898, -49.2456],
-            'Bela Vista': [-25.5456, -49.2567],
-            'Boa Vista': [-25.5378, -49.2234],
-            'Brasil': [-25.5212, -49.2634],
-            'Cachoeirinha': [-25.5678, -49.3123],
-            'Campo Largo': [-25.4534, -49.3456],
-            'Campus': [-25.5123, -49.3234],
-            'Cidade Industrial': [-25.4834, -49.2834],
-            'Colônia Rio Grande': [-25.4123, -49.3567],
+            'Cidade Jardim': [-25.5456, -49.2789],
+            'Contenda': [-25.4123, -49.3456],
+            'Costeira': [-25.5567, -49.2432],
             'Cruzeiro': [-25.5234, -49.2345],
-            'Eucaliptos': [-25.5567, -49.2934],
-            'Guabirotuba': [-25.5234, -49.3456],
-            'Inocência': [-25.4789, -49.2567],
+            'Del Rey': [-25.5345, -49.2567],
+            'Dom Rodrigo': [-25.4678, -49.2890],
+            'Guatupê': [-25.5234, -49.2234],
+            'Iná': [-25.5098, -49.3123],
+            'Inspetor Carvalho': [-25.4987, -49.3012],
             'Ipê': [-25.5489, -49.2789],
-            'Jardim': [-25.5345, -49.3012],
-            'Jardim dos Eucaliptos': [-25.5623, -49.2901],
-            'Jardim Kennedy': [-25.5012, -49.2678],
-            'Jardim Maria Helena': [-25.5156, -49.2890],
-            'Muricy': [-25.4876, -49.2345],
-            'Oliveira': [-25.5432, -49.3123],
-            'Parque Industrial': [-25.4765, -49.2765],
-            'Parque São Pedro': [-25.5234, -49.3512],
-            'Pedra Grande': [-25.5765, -49.3345],
-            'Pineville': [-25.5578, -49.2654],
-            'Ponta Grossa': [-25.4654, -49.3456],
-            'Portão': [-25.5098, -49.2543],
-            'Possidônio': [-25.4567, -49.3234],
+            'Itália': [-25.5378, -49.2654],
+            'Jurema': [-25.5212, -49.2543],
+            'Ouro Fino': [-25.5567, -49.2934],
+            'Parque da Fonte': [-25.5623, -49.2890],
+            'Pedro Moro': [-25.5156, -49.2765],
+            'Quississana': [-25.4876, -49.2345],
             'Rio Pequeno': [-25.4987, -49.3345],
-            'Santo Antônio': [-25.5321, -49.2765],
             'São Cristóvão': [-25.5156, -49.2543],
-            'São Francisco': [-25.5467, -49.2432],
-            'São João': [-25.5234, -49.2890],
+            'São Domingos': [-25.5234, -49.3089],
+            'São Marcos': [-25.5098, -49.2234],
             'São Pedro': [-25.5567, -49.3089],
-            'Seara': [-25.4876, -49.2987],
-            'Taboão': [-25.5123, -49.3345],
-            'Tancredo': [-25.5423, -49.2543],
-            'Vila Formosa': [-25.4765, -49.2345],
-            'Vila Guarani': [-25.5098, -49.3123],
-            'Vila Izabel': [-25.5234, -49.2654],
-            'Vila Residencial': [-25.4987, -49.2543],
-            'Vila Velha': [-25.5312, -49.3089],
-            'Xaxim': [-25.4876, -49.3210]
+            'Silveira da Motta': [-25.5423, -49.2432],
+            'Três Marias': [-25.4765, -49.2987],
+            'Zacarias': [-25.5312, -49.2654],
+            'Cachoeira': [-25.4234, -49.3567],
+            'Cachoeira de São José': [-25.4123, -49.3456],
+            'Campestre da Faxina': [-25.3987, -49.3678],
+            'Campina': [-25.4534, -49.3123],
+            'Campina do Miringuava': [-25.3898, -49.3789],
+            'Campina do Taquaral': [-25.4123, -49.3567],
+            'Campina dos Furtados': [-25.3765, -49.3890],
+            'Carioca': [-25.4567, -49.3012],
+            'Colônia Acioli': [-25.3678, -49.3956],
+            'Colônia Castelhanos': [-25.3543, -49.4012],
+            'Colônia Malhada': [-25.3456, -49.4123],
+            'Colônia Marcelino': [-25.3345, -49.4234],
+            'Colônia Murici': [-25.3234, -49.4345],
+            'Colônia Rio Grande': [-25.4123, -49.3567],
+            'Colônia Santos Andrade': [-25.3987, -49.3678],
+            'Despique': [-25.3123, -49.4456],
+            'Emboque': [-25.3012, -49.4567],
+            'Faxina': [-25.2898, -49.4678],
+            'Gamela': [-25.2789, -49.4789],
+            'Marcelino': [-25.2678, -49.4890],
+            'Morro Alto': [-25.2567, -49.5012],
+            'Olho Agudo': [-25.2456, -49.5123],
+            'Roça Velha': [-25.2345, -49.5234],
+            'Roseira de São Sebastião': [-25.2234, -49.5345],
+            'Santo Antônio': [-25.5321, -49.2765],
+            'São Sebastião': [-25.2123, -49.5456]
         };
 
         function createIcon() {
@@ -211,7 +378,12 @@
             });
         }
         
-        async function init() {
+        function init() {
+            lucide.createIcons();
+            initInternal();
+        }
+
+        async function initInternal() {
             try {
                 var r = await fetch('/api/apoiadores');
                 dados = await r.json();
@@ -259,10 +431,24 @@
         
         function initMap() {
             if (map) return;
-            map = L.map('map', { zoomControl: false }).setView(SJP_CENTER, 12);
-            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                attribution: '© OpenStreetMap',
-                maxZoom: 19
+            
+            // Limites aproximados de São José dos Pinhais
+            var bounds = [
+                [-25.75, -49.50], // Sudoeste
+                [-25.35, -49.00]  // Nordeste
+            ];
+
+            map = L.map('map', { 
+                zoomControl: false,
+                maxBounds: bounds,
+                maxBoundsViscosity: 1.0
+            }).setView(SJP_CENTER, 12);
+
+            // Mapa Escuro Premium
+            L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+                attribution: '© OpenStreetMap contributors © CARTO',
+                maxZoom: 18,
+                minZoom: 11
             }).addTo(map);
             
             L.control.zoom({ position: 'bottomright' }).addTo(map);
@@ -276,56 +462,38 @@
                 var b = d[j].bairro;
                 if (b) bCount[b] = (bCount[b] || 0) + 1;
             }
-            var bKeys = Object.keys(bCount).sort(function(a, b) { return bCount[b] - bCount[a]; }).slice(0, 5);
-            var bData = bKeys.map(function(k) { return bCount[k]; });
-            var bLabels = bKeys.map(function(k) { 
-                var pct = t > 0 ? Math.round(bCount[k] / t * 100) : 0;
-                return k + ' (' + pct + '%)';
-            });
-            
             document.getElementById('t1').textContent = t;
-            document.getElementById('t4').textContent = Object.keys(bCount).length;
             
-            if (ch1) { ch1.destroy(); ch1 = null; }
-            var cores = ['#00d4ff','#00ff88','#ffc107','#ff5722','#9c27b0','#03a9f4','#8bc34a','#ff9800','#e91e63','#607d8b'];
-            ch1 = new ApexCharts(document.getElementById('c1'), {
-                series: bData,
-                labels: bLabels,
-                chart: {
-                    type: 'donut',
-                    height: 280,
-                    fontFamily: 'Inter, sans-serif',
-                    background: 'transparent'
-                },
-                colors: cores.slice(0, bKeys.length),
-                dataLabels: { enabled: false },
-                plotOptions: {
-                    pie: {
-                        donut: {
-                            size: '80%'
-                        }
-                    }
-                },
-                legend: {
-                    show: true,
-                    position: 'bottom',
-                    labels: { colors: '#fff' },
-                    fontSize: '11px'
-                },
-                tooltip: {
-                    theme: 'dark',
-                    y: {
-                        formatter: function(val) {
-                            var pct = t > 0 ? Math.round(val / t * 100) : 0;
-                            return val + ' (' + pct + '%)';
-                        }
-                    }
-                },
-                stroke: { colors: ['#0a0e17'] }
-            });
-            ch1.render();
+            // Novos Hoje
+            var hoje = new Date().toISOString().substring(0, 10);
+            var countHoje = d.filter(item => item.data_cadastro === hoje).length;
+            document.getElementById('t2').textContent = countHoje;
             
-            var media = t > 0 ? t / Object.keys(bCount).length : 0;
+            // Média por Bairro
+            var numBairros = Object.keys(bCount).length;
+            var media = numBairros > 0 ? (t / numBairros).toFixed(1) : 0;
+            document.getElementById('t3').textContent = media;
+            
+            document.getElementById('t4').textContent = numBairros;
+            
+            // Popular Tabela
+            var tbody = document.getElementById('table-body');
+            if (tbody) {
+                tbody.innerHTML = '';
+                var sortedBairros = Object.keys(bCount).sort((a,b) => bCount[b] - bCount[a]);
+                sortedBairros.forEach(b => {
+                    var tr = document.createElement('tr');
+                    tr.onclick = function() { focarBairro(b); };
+                    var pct = t > 0 ? (bCount[b] / t * 100).toFixed(1) : 0;
+                    tr.innerHTML = `
+                        <td style="padding: 6px; border-bottom: 1px solid rgba(255,255,255,0.05);">${b}</td>
+                        <td style="padding: 6px; border-bottom: 1px solid rgba(255,255,255,0.05); text-align: center;">${bCount[b]}</td>
+                        <td style="padding: 6px; border-bottom: 1px solid rgba(255,255,255,0.05); text-align: right; color: #00ff88;">${pct}%</td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+            }
+
             
             var dateCount = {};
             for (var dm = 0; dm < dados.length; dm++) {
@@ -422,89 +590,144 @@
             renderMap(d, media, t);
         }
         
+        var markerCluster = null;
+
         function renderMap(dadosFiltrados, media, total) {
             if (!map) return;
             
-            for (var i = 0; i < markers.length; i++) {
-                map.removeLayer(markers[i]);
-            }
+            // Limpa camadas anteriores
+            markers.forEach(m => map.removeLayer(m));
             markers = [];
             
-            if (heatLayer) {
-                map.removeLayer(heatLayer);
-                heatLayer = null;
-            }
+            if (heatLayer) { map.removeLayer(heatLayer); heatLayer = null; }
+            if (markerCluster) { map.removeLayer(markerCluster); markerCluster = null; }
             
+            markerCluster = L.markerClusterGroup({
+                iconCreateFunction: function(cluster) {
+                    return L.divIcon({ 
+                        html: '<div class="pr-cluster">' + cluster.getChildCount() + '</div>', 
+                        className: 'cluster-icon', 
+                        iconSize: [35, 35] 
+                    });
+                }
+            });
+
             var heatPoints = [];
             var bCount = {};
+            dadosFiltrados.forEach(d => { if (d.bairro) bCount[d.bairro] = (bCount[d.bairro] || 0) + 1; });
             
+            var maxEngajamento = 0;
+            Object.values(bCount).forEach(v => { if (v > maxEngajamento) maxEngajamento = v; });
+            if (maxEngajamento === 0) maxEngajamento = 1;
+
+            var sjpBounds = { minLat: -25.75, maxLat: -25.35, minLng: -49.50, maxLng: -49.00 };
+            function isInsideSJP(lat, lng) { return lat >= sjpBounds.minLat && lat <= sjpBounds.maxLat && lng >= sjpBounds.minLng && lng <= sjpBounds.maxLng; }
+
+            // 1. Calor por Bairro
+            for (var bairroNome in bCount) {
+                var coords = BAIRROS_COORDS[bairroNome];
+                if (!coords || !isInsideSJP(coords[0], coords[1])) continue;
+                var count = bCount[bairroNome];
+                var weight = 0.3 + ( (count / maxEngajamento) * 0.7 );
+                heatPoints.push([coords[0], coords[1], weight]);
+            }
+
+            // 2. Marcadores e Calor Individual
             for (var j = 0; j < dadosFiltrados.length; j++) {
                 var apoiador = dadosFiltrados[j];
                 var lat, lng;
-                
                 if (apoiador.latitude && apoiador.longitude) {
-                    lat = parseFloat(apoiador.latitude);
-                    lng = parseFloat(apoiador.longitude);
+                    lat = parseFloat(apoiador.latitude); lng = parseFloat(apoiador.longitude);
                 } else {
-                    var coords = BAIRROS_COORDS[apoiador.bairro];
-                    if (coords) {
-                        lat = coords[0];
-                        lng = coords[1];
-                    } else {
-                        lat = SJP_CENTER[0];
-                        lng = SJP_CENTER[1];
-                    }
+                    var c = BAIRROS_COORDS[apoiador.bairro] || SJP_CENTER;
+                    lat = c[0]; lng = c[1];
                 }
+                if (!isInsideSJP(lat, lng)) continue;
+
+                heatPoints.push([lat, lng, 1.0]);
                 
-                heatPoints.push([lat, lng, 1]);
+                var impreciso = apoiador.coordenadas_precisas === 0;
+                var icon = L.divIcon({
+                    className: 'custom-marker',
+                    html: impreciso 
+                        ? '<div class="marker-pulsante" style="background:#ff4444;width:32px;height:32px;border-radius:50%;border:3px solid white;box-shadow:0 0 15px rgba(255,0,0,0.5);display:flex;align-items:center;justify-content:center;color:#fff;font-size:16px;font-weight:900;">!</div>'
+                        : '<div class="marker-glow" style="background:#00ff88;width:24px;height:24px;border-radius:50%;border:3px solid white;display:flex;align-items:center;justify-content:center;color:#000;font-size:12px;font-weight:bold;">✓</div>',
+                    iconSize: impreciso ? [32, 32] : [24, 24],
+                    iconAnchor: impreciso ? [16, 16] : [12, 12]
+                });
+                
+                var m = L.marker([lat, lng], {icon: icon});
+                m.bindPopup(`
+                    <div style="min-width:150px; color:#fff;">
+                        <b style="font-size:14px;color:#00d4ff;">${apoiador.nome || '-'}</b><br>
+                        <span>${apoiador.bairro || '-'}</span><br>
+                        <div style="margin-top:10px;padding-top:10px;border-top:1px solid rgba(255,255,255,0.1);font-size:11px;">
+                            <b>Engajamento:</b> ${bCount[apoiador.bairro] || 0} pessoas
+                        </div>
+                    </div>
+                `);
+                markerCluster.addLayer(m);
+                markers.push(m);
             }
             
+            map.addLayer(markerCluster);
+
             if (heatPoints.length > 0) {
                 heatLayer = L.heatLayer(heatPoints, {
-                    radius: 50,
-                    blur: 20,
-                    maxZoom: 17,
-                    gradient: {
-                        0.2: '#00ffff',
-                        0.4: '#00ff88',
-                        0.6: '#ffff00',
-                        0.8: '#ff00ff',
-                        1: '#ff0040'
-                    }
+                    radius: 65, blur: 35, max: 1.0,
+                    gradient: { 0.2: '#ff0000', 0.5: '#ffff00', 1.0: '#00ff88' }
                 }).addTo(map);
             }
-            
-            bCount = {};
-            for (var j = 0; j < dadosFiltrados.length; j++) {
-                var b = dadosFiltrados[j].bairro;
-                if (b) {
-                    bCount[b] = (bCount[b] || 0) + 1;
-                }
+
+            updateLegend(maxEngajamento, total);
+        }
+
+        function focarBairro(nome) {
+            var coords = BAIRROS_COORDS[nome];
+            if (coords) {
+                map.flyTo(coords, 15, { duration: 1.5 });
+                // Encontrar e abrir popup de alguém nesse bairro se possível
+                var m = markers.find(m => {
+                    var pop = m.getPopup().getContent();
+                    return pop.includes(nome);
+                });
+                if (m) setTimeout(() => m.openPopup(), 1600);
+            }
+        }
+
+        function updateLegend(max, total) {
+            var legend = document.getElementById('map-legend');
+            if (!legend) {
+                legend = document.createElement('div');
+                legend.id = 'map-legend';
+                legend.className = 'map-legend';
+                legend.style.position = 'fixed';
+                legend.style.bottom = '30px';
+                legend.style.right = '30px';
+                legend.style.zIndex = '1000';
+                legend.style.minWidth = '220px';
+                document.body.appendChild(legend);
             }
             
-            var keys = Object.keys(bCount);
-            for (var k = 0; k < keys.length; k++) {
-                var bairro = keys[k];
-                var count = bCount[bairro];
-                var coords = BAIRROS_COORDS[bairro];
-                if (coords) {
-                    var isBaixo = count < media;
-                    var cor = isBaixo ? '#ff0040' : '#00ffff';
-                    var pct = total > 0 ? Math.round(count / total * 100) : 0;
-                    var status = isBaixo ? 'BAIXO' : 'ALTO';
-                    
-                    var icon = L.divIcon({
-                        className: 'custom-marker',
-                        html: '<div style="background:' + cor + ';width:28px;height:28px;border-radius:50%;border:3px solid white;box-shadow:0 2px 10px rgba(0,0,0,0.5);display:flex;align-items:center;justify-content:center;color:#fff;font-size:12px;font-weight:bold;">' + count + '</div>',
-                        iconSize: [28, 28],
-                        iconAnchor: [14, 14]
-                    });
-                    
-                    var m = L.marker([coords[0], coords[1]], {icon: icon}).addTo(map);
-                    m.bindPopup('<b style="font-size:14px;">' + bairro + '</b><br><span style="color:' + cor + ';font-weight:bold;">' + status + '</span><br>Apoiadores: ' + count + ' (' + pct + '%)<br><small style="color:#888;">Média: ' + Math.round(media) + '</small>');
-                    markers.push(m);
-                }
-            }
+            legend.innerHTML = `
+                <div style="font-weight:800;margin-bottom:12px;color:#00d4ff;text-transform:uppercase;letter-spacing:2px;font-size:10px;display:flex;align-items:center;gap:8px;">
+                    <i data-lucide="bar-chart-3" style="width:12px;height:12px;"></i>
+                    Engajamento Territorial
+                </div>
+                <div style="padding: 2px 0;">
+                    <div style="height:10px; width:100%; border-radius:5px; background:linear-gradient(to right, #ff0000 0%, #ffff00 50%, #00ff88 100%); border:1px solid rgba(255,255,255,0.1); box-shadow: 0 4px 15px rgba(0,0,0,0.4);"></div>
+                    <div style="display:flex; justify-content:space-between; font-size:9px; color:rgba(255,255,255,0.5); margin-top:8px; font-weight:700; text-transform:uppercase;">
+                        <span>Baixo</span>
+                        <span>Médio</span>
+                        <span>Alto</span>
+                    </div>
+                </div>
+                <div style="margin-top:15px;font-size:9px;color:rgba(255,255,255,0.3);border-top:1px solid rgba(255,255,255,0.05);padding-top:10px;display:flex;justify-content:space-between;font-weight:600;">
+                    <span>SJP TOTAL: ${total}</span>
+                    <span>PICO: ${max}</span>
+                </div>
+            `;
+            if (window.lucide) lucide.createIcons();
         }
         
         function exportar() {
@@ -523,6 +746,38 @@
         }
         
         document.addEventListener('DOMContentLoaded', init);
+        
+        // Escutar mudanças de outras abas
+        window.addEventListener('storage', function(e) {
+            if (e.key === 'apoiador_changed') {
+                var data = JSON.parse(e.newValue);
+                
+                if (data.action === 'create') {
+                    fetch('/api/apoiadores')
+                        .then(r => r.json())
+                        .then(all => {
+                            var novo = all.find(a => !dados.find(o => o.id === a.id));
+                            if (novo) {
+                                dados.push(novo);
+                                populate();
+                                render();
+                            }
+                        });
+                } else if (data.action === 'edit') {
+                    fetch('/api/apoiadores/' + data.id)
+                        .then(r => r.json())
+                        .then(atualizado => {
+                            if (atualizado) {
+                                dados = dados.map(d => d.id === atualizado.id ? atualizado : d);
+                                populate();
+                                render();
+                            }
+                        });
+                }
+                
+                localStorage.removeItem('apoiador_changed');
+            }
+        });
     </script>
 </body>
 </html>

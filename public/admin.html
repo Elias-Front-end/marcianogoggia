@@ -4,7 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Gerenciar Cadastros - Marciano Goggia</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         html, body { height: 100%; font-family: 'Inter', sans-serif; background: #0a0e17; color: #fff; font-size: 14px; overflow-x: hidden; }
@@ -12,231 +13,150 @@
         .navbar { 
             position: fixed; top: 0; left: 0; right: 0; z-index: 1000;
             display: flex; justify-content: space-between; padding: 0.8rem 1.5rem; 
-            background: rgba(0,0,0,0.7); backdrop-filter: blur(10px);
+            background: rgba(10, 14, 23, 0.7); backdrop-filter: blur(15px);
+            border-bottom: 1px solid rgba(255,255,255,0.05);
         }
-        .logo { font-size: 1.3rem; font-weight: 700; color: #00d4ff; }
-        .nav { display: flex; gap: 0.5rem; flex-wrap: wrap; }
-        .nav a { color: #fff; text-decoration: none; padding: 0.5rem 1rem; border-radius: 8px; font-size: 0.9rem; }
-        .nav a.active { background: rgba(0,212,255,0.2); color: #00d4ff; }
+        .logo { font-size: 1.5rem; font-weight: 800; color: #1a1f2e; display: flex; align-items: center; gap: 8px; }
+        .logo span { color: #00d4ff; }
         
         .main-container {
-            padding-top: 70px;
-            height: 100vh;
-            display: flex;
-            flex-direction: column;
+            padding-top: 80px;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 100px 2rem 2rem 2rem;
         }
         
+        .stats-grid { 
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+        .stat-card { 
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.05);
+            padding: 20px;
+            border-radius: 20px;
+            text-align: center;
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+        }
+        .stat-card:hover {
+            background: rgba(0,212,255,0.05);
+            border-color: rgba(0,212,255,0.2);
+            transform: translateY(-3px);
+        }
+        .stat-value { font-size: 2rem; font-weight: 800; color: #00d4ff; text-shadow: 0 0 15px rgba(0,212,255,0.3); }
+        .stat-label { font-size: 0.7rem; color: rgba(255,255,255,0.5); text-transform: uppercase; letter-spacing: 1px; margin-top: 5px; display: block; }
+        
+        .btn-voltar {
+            color: rgba(255,255,255,0.7);
+            text-decoration: none;
+            padding: 0.6rem 1.2rem;
+            border-radius: 12px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            border: 1px solid rgba(255,255,255,0.1);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(255,255,255,0.05);
+            backdrop-filter: blur(10px);
+        }
+        .btn-voltar:hover { 
+            background: rgba(255,255,255,0.12); 
+            color: #fff; 
+            border-color: #00d4ff;
+            transform: translateX(-5px);
+        }
+
         .toolbar {
-            padding: 1rem 1.5rem;
-            background: rgba(0,0,0,0.3);
-            border-bottom: 1px solid rgba(255,255,255,0.1);
+            background: rgba(255,255,255,0.02);
+            padding: 1.5rem;
+            border-radius: 24px;
+            border: 1px solid rgba(255,255,255,0.05);
             display: flex;
             justify-content: space-between;
             align-items: center;
-            flex-wrap: wrap;
-            gap: 1rem;
+            margin-bottom: 2rem;
+            backdrop-filter: blur(10px);
         }
         
-        .toolbar-left {
-            display: flex;
-            gap: 1rem;
-            align-items: center;
-        }
-        
-        .page-title {
-            color: #00d4ff;
-            font-size: 1.4rem;
-            font-weight: 600;
-        }
-        
-        .stats-bar {
-            display: flex;
-            gap: 1rem;
-            flex-wrap: wrap;
-        }
-        
-        .stat-pill {
-            background: rgba(0,212,255,0.1);
-            border: 1px solid rgba(0,212,255,0.3);
-            padding: 0.5rem 1rem;
-            border-radius: 20px;
-            font-size: 0.9rem;
-            color: #00d4ff;
-        }
-        
-        .toolbar-right {
-            display: flex;
-            gap: 0.8rem;
-            align-items: center;
-        }
-        
-        .btn {
-            padding: 0.8rem 1.5rem;
-            border-radius: 8px;
-            border: none;
-            font-size: 0.95rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.2s;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-        
-        .btn-primary {
-            background: #00d4ff;
-            color: #0a0e17;
-        }
-        
-        .btn-primary:hover {
-            background: #00b8e6;
-            transform: translateY(-1px);
-        }
-        
-        .btn-secondary {
-            background: transparent;
-            color: #fff;
-            border: 1px solid rgba(255,255,255,0.2);
-        }
-        
-        .btn-secondary:hover {
-            background: rgba(255,255,255,0.1);
-        }
-        
-        .btn-export {
-            background: rgba(0,255,136,0.2);
-            color: #00ff88;
-            border: 1px solid rgba(0,255,136,0.3);
-        }
-        
-        .btn-export:hover {
-            background: rgba(0,255,136,0.3);
-        }
-        
-        .content-area {
+        .search-container {
+            position: relative;
             flex: 1;
-            display: flex;
-            flex-direction: column;
-            padding: 1rem 1.5rem;
-            overflow: hidden;
+            max-width: 500px;
         }
-        
-        .search-section {
-            margin-bottom: 1rem;
+        .search-container i {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: rgba(255,255,255,0.3);
         }
-        
-        .search-bar {
-            display: flex;
-            gap: 1rem;
-            flex-wrap: wrap;
-            align-items: center;
-        }
-        
-        .search-bar input, .search-bar select {
-            padding: 0.8rem;
-            border-radius: 8px;
-            border: 1px solid rgba(255,255,255,0.15);
-            background: rgba(0,0,0,0.3);
+        .search-container input {
+            width: 100%;
+            padding: 12px 15px 12px 45px;
+            background: rgba(0,0,0,0.2);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 12px;
             color: #fff;
-            font-size: 0.95rem;
+            transition: all 0.3s;
         }
-        
-        .search-bar input {
-            flex: 1;
-            min-width: 250px;
-        }
-        
-        .search-bar select {
-            min-width: 180px;
+        .search-container input:focus {
+            border-color: #00d4ff;
+            background: rgba(0,0,0,0.4);
+            outline: none;
         }
         
         .table-container {
-            flex: 1;
-            background: rgba(255,255,255,0.03);
-            border-radius: 16px;
-            border: 1px solid rgba(255,255,255,0.08);
+            background: rgba(255,255,255,0.02);
+            border-radius: 24px;
+            border: 1px solid rgba(255,255,255,0.05);
             overflow: hidden;
-            display: flex;
-            flex-direction: column;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.3);
         }
         
         .table-header {
-            padding: 1rem 1.5rem;
-            background: rgba(0,212,255,0.1);
-            border-bottom: 1px solid rgba(255,255,255,0.08);
+            padding: 1.5rem 2rem;
             display: flex;
             justify-content: space-between;
             align-items: center;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
         }
         
-        .table-header h3 {
-            color: #00d4ff;
-            font-size: 1.1rem;
-        }
+        .table-header h3 { color: #00d4ff; font-size: 1.2rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; }
         
-        .table-body {
-            flex: 1;
-            overflow-y: auto;
-        }
-        
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            font-size: 0.95rem;
-        }
+        table { width: 100%; border-collapse: collapse; }
         
         th {
-            background: rgba(0,0,0,0.3);
-            color: #00d4ff;
-            font-weight: 600;
-            padding: 1rem;
+            background: rgba(255,255,255,0.02);
+            color: rgba(255,255,255,0.5);
+            font-weight: 700;
+            text-transform: uppercase;
+            font-size: 0.75rem;
+            letter-spacing: 1px;
+            padding: 1.2rem 1.5rem;
             text-align: left;
-            position: sticky;
-            top: 0;
-            border-bottom: 1px solid rgba(255,255,255,0.1);
+            border-bottom: 1px solid rgba(255,255,255,0.05);
         }
         
-        td {
-            padding: 1rem;
-            border-bottom: 1px solid rgba(255,255,255,0.06);
-            vertical-align: top;
-        }
+        td { padding: 1.2rem 1.5rem; border-bottom: 1px solid rgba(255,255,255,0.03); }
         
-        tr:hover {
-            background: rgba(255,255,255,0.03);
-        }
+        tr:hover { background: rgba(0, 212, 255, 0.03); }
         
-        .action-btns {
-            display: flex;
-            gap: 0.5rem;
-        }
+        .action-btns { display: flex; gap: 8px; }
         
-        .btn-edit, .btn-delete {
-            padding: 0.5rem 0.8rem;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 0.85rem;
-            border: none;
-            transition: all 0.2s;
+        .btn-icon {
+            width: 36px; height: 36px; border-radius: 10px; border: none;
+            display: flex; align-items: center; justify-content: center;
+            cursor: pointer; transition: all 0.2s;
         }
-        
-        .btn-edit {
-            background: rgba(255,193,7,0.2);
-            color: #ffc107;
-        }
-        
-        .btn-edit:hover {
-            background: rgba(255,193,7,0.3);
-        }
-        
-        .btn-delete {
-            background: rgba(255,68,68,0.2);
-            color: #ff4444;
-        }
-        
-        .btn-delete:hover {
-            background: rgba(255,68,68,0.3);
-        }
+        .btn-edit { background: rgba(255,193,7,0.1); color: #ffc107; border: 1px solid rgba(255,193,7,0.2); }
+        .btn-delete { background: rgba(255,68,68,0.1); color: #ff4444; border: 1px solid rgba(255,68,68,0.2); }
+        .btn-edit:hover { background: #ffc107; color: #000; }
+        .btn-delete:hover { background: #ff4444; color: #fff; }
         
         .badge {
             padding: 0.3rem 0.6rem;
@@ -261,36 +181,21 @@
             font-size: 1.1rem;
         }
         
-        .modal-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.8);
-            display: none;
-            justify-content: center;
-            align-items: center;
-            z-index: 2000;
-        }
-        
-        .modal-overlay.show {
-            display: flex;
-        }
-        
         .modal {
-            background: #1a1f2e;
-            border-radius: 16px;
+            background: rgba(10, 14, 23, 0.95);
+            backdrop-filter: blur(25px);
+            border-radius: 24px;
             width: 95%;
             max-width: 600px;
-            max-height: 90vh;
-            overflow-y: auto;
+            border: 1px solid rgba(255,255,255,0.1);
+            box-shadow: 0 40px 100px rgba(0,0,0,0.8);
+            overflow: hidden;
         }
         
         .modal-header {
-            padding: 1.5rem;
-            background: rgba(0,212,255,0.1);
-            border-radius: 16px 16px 0 0;
+            padding: 1.5rem 2rem;
+            background: rgba(0,212,255,0.05);
+            border-bottom: 1px solid rgba(255,255,255,0.05);
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -301,20 +206,11 @@
             font-size: 1.3rem;
         }
         
-        .modal-close {
-            background: none;
-            border: none;
-            color: #fff;
-            font-size: 1.8rem;
-            cursor: pointer;
-            line-height: 1;
-            padding: 0;
-            width: 30px;
-            height: 30px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.8); display: none; justify-content: center; align-items: center; z-index: 2000;
         }
+        .modal-overlay.show { display: flex; }
         
         .modal-body {
             padding: 1.5rem;
@@ -410,30 +306,42 @@
 </head>
 <body>
     <nav class="navbar">
-        <div class="logo">Marciano Goggia</div>
-        <div class="nav">
-            <a href="index.html">Cadastro</a>
-            <a href="mapa.html">Mapa</a>
-            <a href="dashboard.html">Dashboard</a>
-            <a href="admin.html" class="active">Gerenciar</a>
-        </div>
+        <div class="logo">Gerenciar <span>Apoiadores</span></div>
+        <a href="index.html" class="btn-voltar">
+            <i data-lucide="arrow-left" style="width:16px;"></i> Voltar
+        </a>
     </nav>
     
     <div class="main-container">
-        <div class="toolbar">
-            <div class="toolbar-left">
-                <h1 class="page-title">Gerenciar Apoiadores</h1>
-                <div class="stats-bar">
-                    <div class="stat-pill" id="totalCount">Total: 0</div>
-                    <div class="stat-pill" id="bairroCount">Bairros: 0</div>
-                </div>
+        <div class="stats-grid">
+            <div class="stat-card">
+                <i data-lucide="users" style="color:#00d4ff; width:16px; margin-bottom:8px;"></i>
+                <span class="stat-value" id="totalCount">0</span>
+                <span class="stat-label">Total Geral</span>
             </div>
-            <div class="toolbar-right">
-                <button class="btn btn-secondary" onclick="exportarCSV()">
-                    📥 Exportar CSV
+            <div class="stat-card">
+                <i data-lucide="map-pin" style="color:#e91e63; width:16px; margin-bottom:8px;"></i>
+                <span class="stat-value" id="bairroCount">0</span>
+                <span class="stat-label">Bairros Ativos</span>
+            </div>
+            <div class="stat-card">
+                <i data-lucide="check-circle" style="color:#00ff88; width:16px; margin-bottom:8px;"></i>
+                <span class="stat-value" id="countLocalizado">0</span>
+                <span class="stat-label">Localizados</span>
+            </div>
+        </div>
+
+        <div class="toolbar">
+            <div class="search-container">
+                <i data-lucide="search"></i>
+                <input type="text" id="searchInput" placeholder="Buscar por nome, rua ou bairro..." oninput="filtrarDados()">
+            </div>
+            <div style="display:flex; gap:12px;">
+                <button class="btn-icon btn-edit" style="width:auto; padding:0 20px; color:#00ff88; border-color:rgba(0,255,136,0.3); background:rgba(0,255,136,0.1);" onclick="exportarCSV()">
+                    <i data-lucide="download" style="width:16px; margin-right:8px;"></i> Exportar CSV
                 </button>
-                <button class="btn btn-primary" onclick="abrirModalCadastro()">
-                    ➕ Novo Cadastro
+                <button class="btn-icon btn-edit" style="width:auto; padding:0 20px; color:#00d4ff; border-color:rgba(0,212,255,0.3); background:rgba(0,212,255,0.1);" onclick="abrirModalCadastro()">
+                    <i data-lucide="plus" style="width:16px; margin-right:8px;"></i> Novo Cadastro
                 </button>
             </div>
         </div>
@@ -497,7 +405,72 @@
                         </div>
                         <div class="form-group">
                             <label for="bairro">Bairro *</label>
-                            <input type="text" id="bairro" required placeholder="Digite o nome do bairro">
+                            <input type="text" id="bairro" list="bairrosList" required placeholder="Digite ou selecione o bairro" autocomplete="off">
+                            <datalist id="bairrosList">
+                                <option value="Academia">
+                                <option value="Afonso Pena">
+                                <option value="Águas Belas">
+                                <option value="Aristocrata">
+                                <option value="Arujá">
+                                <option value="Aviação">
+                                <option value="Barro Preto">
+                                <option value="Bom Jesus">
+                                <option value="Boneca do Iguaçu">
+                                <option value="Borda do Campo">
+                                <option value="Braga">
+                                <option value="Campo Largo da Roseira">
+                                <option value="Centro">
+                                <option value="Cidade Jardim">
+                                <option value="Contenda">
+                                <option value="Costeira">
+                                <option value="Cruzeiro">
+                                <option value="Del Rey">
+                                <option value="Dom Rodrigo">
+                                <option value="Guatupê">
+                                <option value="Iná">
+                                <option value="Inspetor Carvalho">
+                                <option value="Ipê">
+                                <option value="Itália">
+                                <option value="Jurema">
+                                <option value="Ouro Fino">
+                                <option value="Parque da Fonte">
+                                <option value="Pedro Moro">
+                                <option value="Quississana">
+                                <option value="Rio Pequeno">
+                                <option value="São Cristóvão">
+                                <option value="São Domingos">
+                                <option value="São Marcos">
+                                <option value="São Pedro">
+                                <option value="Silveira da Motta">
+                                <option value="Três Marias">
+                                <option value="Zacarias">
+                                <option value="Cachoeira">
+                                <option value="Cachoeira de São José">
+                                <option value="Campestre da Faxina">
+                                <option value="Campina">
+                                <option value="Campina do Miringuava">
+                                <option value="Campina do Taquaral">
+                                <option value="Campina dos Furtados">
+                                <option value="Carioca">
+                                <option value="Colônia Acioli">
+                                <option value="Colônia Castelhanos">
+                                <option value="Colônia Malhada">
+                                <option value="Colônia Marcelino">
+                                <option value="Colônia Murici">
+                                <option value="Colônia Rio Grande">
+                                <option value="Colônia Santos Andrade">
+                                <option value="Despique">
+                                <option value="Emboque">
+                                <option value="Faxina">
+                                <option value="Gamela">
+                                <option value="Marcelino">
+                                <option value="Morro Alto">
+                                <option value="Olho Agudo">
+                                <option value="Roça Velha">
+                                <option value="Roseira de São Sebastião">
+                                <option value="Santo Antônio">
+                                <option value="São Sebastião">
+                            </datalist>
                         </div>
                         <div class="form-row">
                             <div class="form-group">
@@ -528,114 +501,105 @@
         // Coordenadas padrão de São José dos Pinhais
         const SJP_CENTER = { lat: -25.5317, lng: -49.2921 };
         
-        // Mapeamento de bairros para coordenadas mais precisas
+        // LocationIQ API Key - obter em https://locationiq.com/
+        const LOCATIONIQ_KEY = 'pk.49f935195ce927d0901526065edf509c';
+        
+        // Mapeamento de bairros para coordenadas (fallback)
         const BAIRROS_COORDS = {
+            'Academia': [-25.5189, -49.2321],
+            'Afonso Pena': [-25.5423, -49.2756],
+            'Águas Belas': [-25.5567, -49.3012],
+            'Aristocrata': [-25.5298, -49.2654],
+            'Arujá': [-25.5489, -49.3123],
+            'Aviação': [-25.5084, -49.1755],
+            'Barro Preto': [-25.4765, -49.2567],
+            'Bom Jesus': [-25.5123, -49.3234],
+            'Boneca do Iguaçu': [-25.5234, -49.2890],
+            'Borda do Campo': [-25.4876, -49.3345],
+            'Braga': [-25.4534, -49.3210],
+            'Campo Largo da Roseira': [-25.4423, -49.3156],
             'Centro': [-25.5317, -49.2921],
-            'Aeroporto': [-25.5084, -49.1755],
-            'Alto da Boa Vista': [-25.5521, -49.3210],
-            'Barra do João José': [-25.4898, -49.2456],
-            'Bela Vista': [-25.5456, -49.2567],
-            'Boa Vista': [-25.5378, -49.2234],
-            'Brasil': [-25.5212, -49.2634],
-            'Cachoeirinha': [-25.5678, -49.3123],
-            'Campo Largo': [-25.4534, -49.3456],
-            'Campus': [-25.5123, -49.3234],
-            'Cidade Industrial': [-25.4834, -49.2834],
-            'Colônia Rio Grande': [-25.4123, -49.3567],
+            'Cidade Jardim': [-25.5456, -49.2789],
+            'Contenda': [-25.4123, -49.3456],
+            'Costeira': [-25.5567, -49.2432],
             'Cruzeiro': [-25.5234, -49.2345],
-            'Eucaliptos': [-25.5567, -49.2934],
-            'Guabirotuba': [-25.5234, -49.3456],
-            'Inocência': [-25.4789, -49.2567],
+            'Del Rey': [-25.5345, -49.2567],
+            'Dom Rodrigo': [-25.4678, -49.2890],
+            'Guatupê': [-25.5234, -49.2234],
+            'Iná': [-25.5098, -49.3123],
+            'Inspetor Carvalho': [-25.4987, -49.3012],
             'Ipê': [-25.5489, -49.2789],
-            'Jardim': [-25.5345, -49.3012],
-            'Jardim dos Eucaliptos': [-25.5623, -49.2901],
-            'Jardim Kennedy': [-25.5012, -49.2678],
-            'Jardim Maria Helena': [-25.5156, -49.2890],
-            'Muricy': [-25.4876, -49.2345],
-            'Oliveira': [-25.5432, -49.3123],
-            'Parque Industrial': [-25.4765, -49.2765],
-            'Parque São Pedro': [-25.5234, -49.3512],
-            'Pedra Grande': [-25.5765, -49.3345],
-            'Pineville': [-25.5578, -49.2654],
-            'Ponta Grossa': [-25.4654, -49.3456],
-            'Portão': [-25.5098, -49.2543],
-            'Possidônio': [-25.4567, -49.3234],
+            'Itália': [-25.5378, -49.2654],
+            'Jurema': [-25.5212, -49.2543],
+            'Ouro Fino': [-25.5567, -49.2934],
+            'Parque da Fonte': [-25.5623, -49.2890],
+            'Pedro Moro': [-25.5156, -49.2765],
+            'Quississana': [-25.4876, -49.2345],
             'Rio Pequeno': [-25.4987, -49.3345],
-            'Santo Antônio': [-25.5321, -49.2765],
             'São Cristóvão': [-25.5156, -49.2543],
-            'São Francisco': [-25.5467, -49.2432],
-            'São João': [-25.5234, -49.2890],
+            'São Domingos': [-25.5234, -49.3089],
+            'São Marcos': [-25.5098, -49.2234],
             'São Pedro': [-25.5567, -49.3089],
-            'Seara': [-25.4876, -49.2987],
-            'Taboão': [-25.5123, -49.3345],
-            'Tancredo': [-25.5423, -49.2543],
-            'Vila Formosa': [-25.4765, -49.2345],
-            'Vila Guarani': [-25.5098, -49.3123],
-            'Vila Izabel': [-25.5234, -49.2654],
-            'Vila Residencial': [-25.4987, -49.2543],
-            'Vila Velha': [-25.5312, -49.3089],
-            'Xaxim': [-25.4876, -49.3210]
+            'Silveira da Motta': [-25.5423, -49.2432],
+            'Três Marias': [-25.4765, -49.2987],
+            'Zacarias': [-25.5312, -49.2654],
+            'Cachoeira': [-25.4234, -49.3567],
+            'Cachoeira de São José': [-25.4123, -49.3456],
+            'Campestre da Faxina': [-25.3987, -49.3678],
+            'Campina': [-25.4534, -49.3123],
+            'Campina do Miringuava': [-25.3898, -49.3789],
+            'Campina do Taquaral': [-25.4123, -49.3567],
+            'Campina dos Furtados': [-25.3765, -49.3890],
+            'Carioca': [-25.4567, -49.3012],
+            'Colônia Acioli': [-25.3678, -49.3956],
+            'Colônia Castelhanos': [-25.3543, -49.4012],
+            'Colônia Malhada': [-25.3456, -49.4123],
+            'Colônia Marcelino': [-25.3345, -49.4234],
+            'Colônia Murici': [-25.3234, -49.4345],
+            'Colônia Rio Grande': [-25.4123, -49.3567],
+            'Colônia Santos Andrade': [-25.3987, -49.3678],
+            'Despique': [-25.3123, -49.4456],
+            'Emboque': [-25.3012, -49.4567],
+            'Faxina': [-25.2898, -49.4678],
+            'Gamela': [-25.2789, -49.4789],
+            'Marcelino': [-25.2678, -49.4890],
+            'Morro Alto': [-25.2567, -49.5012],
+            'Olho Agudo': [-25.2456, -49.5123],
+            'Roça Velha': [-25.2345, -49.5234],
+            'Roseira de São Sebastião': [-25.2234, -49.5345],
+            'Santo Antônio': [-25.5321, -49.2765],
+            'São Sebastião': [-25.2123, -49.5456]
         };
         
         async function buscarCoordenadas(rua, numero, bairro) {
-            const endereco = `${rua}, ${numero}, ${bairro}, São José dos Pinhais, Paraná, Brasil`;
-            
-            // Normalizar nome do bairro para busca
-            const bairroLower = bairro.toLowerCase().trim();
-            
+            // Usa o endpoint com cache - mais rápido e economiza chamadas de API
             try {
-                const encodedAddr = encodeURIComponent(endereco);
-                const response = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodedAddr}&limit=1`, {
-                    headers: {
-                        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
-                    }
-                });
-                
+                const response = await fetch(`/api/geocodificar-com-cache?rua=${encodeURIComponent(rua)}&numero=${encodeURIComponent(numero)}&bairro=${encodeURIComponent(bairro)}`);
                 const data = await response.json();
                 
-                if (data && data.length > 0) {
+                if (data) {
                     return {
-                        lat: parseFloat(data[0].lat),
-                        lng: parseFloat(data[0].lon)
+                        lat: data.lat,
+                        lng: data.lng,
+                        preciso: data.preciso
                     };
                 }
-                
-                // Se não encontrar pelo endereço específico, usa coordenadas do bairro
-                if (bairro && BAIRROS_COORDS[bairroLower]) {
-                    const coords = BAIRROS_COORDS[bairroLower];
-                    return {
-                        lat: coords[0],
-                        lng: coords[1]
-                    };
-                }
-                
-                // Se o bairro não existe no mapeamento, usa coordenadas padrão com base no nome
-                // Retorna coordenadas padrão de São José dos Pinhais
-                return {
-                    lat: SJP_CENTER.lat,
-                    lng: SJP_CENTER.lng
-                };
-                
             } catch (error) {
                 console.error('Erro ao buscar coordenadas:', error);
-                
-                // Usa coordenadas do bairro se disponível
-                if (bairro && BAIRROS_COORDS[bairroLower]) {
-                    const coords = BAIRROS_COORDS[bairroLower];
-                    return {
-                        lat: coords[0],
-                        lng: coords[1]
-                    };
-                }
-                
-                return {
-                    lat: SJP_CENTER.lat,
-                    lng: SJP_CENTER.lng
-                };
             }
+            
+            // Fallback
+            const bairroLower = bairro.toLowerCase().trim();
+            if (BAIRROS_COORDS[bairroLower]) {
+                const coords = BAIRROS_COORDS[bairroLower];
+                return { lat: coords[0], lng: coords[1], preciso: false };
+            }
+            
+            return { lat: SJP_CENTER.lat, lng: SJP_CENTER.lng, preciso: false };
         }
         
         async function carregarDados() {
+            lucide.createIcons();
             try {
                 const res = await fetch(API_URL + '/apoiadores');
                 allData = await res.json();
@@ -648,9 +612,11 @@
         }
         
         function atualizarStats() {
-            document.getElementById('totalCount').textContent = `Total: ${allData.length}`;
+            document.getElementById('totalCount').textContent = allData.length;
             const bairros = [...new Set(allData.map(d => d.bairro).filter(Boolean))];
-            document.getElementById('bairroCount').textContent = `Bairros: ${bairros.length}`;
+            document.getElementById('bairroCount').textContent = bairros.length;
+            const localizados = allData.filter(d => d.latitude && d.longitude).length;
+            document.getElementById('countLocalizado').textContent = localizados;
         }
         
         function filtrarDados() {
@@ -678,26 +644,33 @@
             
             tbody.innerHTML = dados.map(d => `
                 <tr>
-                    <td><strong>${d.nome || '-'}</strong></td>
-                    <td>${d.rua || '-'}, ${d.numero || '-'}</td>
-                    <td>${d.bairro || '-'}</td>
                     <td>
-                        ${d.telefone ? `<div>📱 ${d.telefone}</div>` : ''}
-                        ${d.email ? `<div>✉️ ${d.email}</div>` : ''}
+                        <div style="font-weight:700; color:#00d4ff;">${d.nome || '-'}</div>
+                        <div style="font-size:0.75rem; color:rgba(255,255,255,0.4);">ID: #${d.id}</div>
+                    </td>
+                    <td><span style="color:rgba(255,255,255,0.8);">${d.rua || '-'}, ${d.numero || '-'}</span></td>
+                    <td><span style="color:rgba(255,255,255,0.6);">${d.bairro || '-'}</span></td>
+                    <td>
+                        <div style="font-size:0.85rem;">
+                            ${d.telefone ? `<div style="display:flex; align-items:center; gap:5px;"><i data-lucide="phone" style="width:10px; color:#00ff88;"></i> ${d.telefone}</div>` : ''}
+                            ${d.email ? `<div style="display:flex; align-items:center; gap:5px;"><i data-lucide="mail" style="width:10px; color:#00d4ff;"></i> ${d.email}</div>` : ''}
+                        </div>
                     </td>
                     <td>
-                        <span class="badge badge-data">${d.data_cadastro || '-'}</span>
-                        ${d.hora_cadastro ? `<div class="badge badge-hora" style="margin-top: 0.3rem;">${d.hora_cadastro}</div>` : ''}
-                        ${d.latitude && d.longitude ? `<div class="badge" style="margin-top: 0.3rem; background: rgba(0,255,136,0.2); color: #00ff88;">📍 Localizado</div>` : '<div class="badge" style="margin-top: 0.3rem; background: rgba(255,193,7,0.2); color: #ffc107;">⚠️ Estimado</div>'}
+                        <div style="display:flex; flex-direction:column; gap:4px;">
+                            <span class="badge badge-data">${d.data_cadastro || '-'}</span>
+                            ${d.latitude && d.longitude ? `<span style="font-size:0.7rem; color:#00ff88; display:flex; align-items:center; gap:4px;"><i data-lucide="map-pin" style="width:10px;"></i> Localizado</span>` : '<span style="font-size:0.7rem; color:#ffc107; display:flex; align-items:center; gap:4px;"><i data-lucide="alert-circle" style="width:10px;"></i> Estimado</span>'}
+                        </div>
                     </td>
                     <td>
                         <div class="action-btns">
-                            <button class="btn-edit" onclick="editarRegistro(${d.id})" title="Editar">✏️</button>
-                            <button class="btn-delete" onclick="excluirRegistro(${d.id})" title="Excluir">🗑️</button>
+                            <button class="btn-icon btn-edit" onclick="editarRegistro(${d.id})" title="Editar"><i data-lucide="edit-3" style="width:14px;"></i></button>
+                            <button class="btn-icon btn-delete" onclick="excluirRegistro(${d.id})" title="Excluir"><i data-lucide="trash-2" style="width:14px;"></i></button>
                         </div>
                     </td>
                 </tr>
             `).join('');
+            lucide.createIcons();
         }
         
         function abrirModalCadastro() {
@@ -776,7 +749,8 @@
                     telefone: telefone,
                     email: email,
                     latitude: coords.lat,
-                    longitude: coords.lng
+                    longitude: coords.lng,
+                    coordenadas_precisas: coords.preciso !== false ? 1 : 0
                 };
                 
                 if (id) {
@@ -797,6 +771,14 @@
                 
                 fecharModalCadastro();
                 carregarDados();
+                
+                // Notificar outras abas para atualizarem apenas o registro específico
+                const dadosAtualizados = {
+                    id: id || 'novo',
+                    action: id ? 'edit' : 'create',
+                    timestamp: Date.now()
+                };
+                localStorage.setItem('apoiador_changed', JSON.stringify(dadosAtualizados));
             } catch(e) {
                 console.error('Erro:', e);
                 Alert.error('Erro ao salvar');
