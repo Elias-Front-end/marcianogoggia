@@ -1,0 +1,55 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Space Grotesk", sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
+
+  --color-accent: #00E5FF;
+  --color-accent-dark: #00B8CC;
+  --color-bg: #030708;
+  --color-surface: #0A0F11;
+  --color-border: rgba(0, 229, 255, 0.2);
+}
+
+@layer base {
+  body {
+    @apply bg-bg text-white font-sans antialiased selection:bg-accent/30 selection:text-white;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-display tracking-tight text-white;
+  }
+}
+
+@layer components {
+  .glass-card {
+    @apply bg-surface/40 backdrop-blur-md border border-white/5;
+  }
+
+  .nav-link {
+    @apply text-sm font-medium tracking-widest uppercase transition-colors hover:text-accent opacity-60 hover:opacity-100;
+  }
+
+  .nav-link-active {
+    @apply text-accent opacity-100 relative;
+  }
+
+  .nav-link-active::after {
+    content: "";
+    @apply absolute -bottom-1 left-0 w-full h-0.5 bg-accent;
+  }
+
+  .btn-primary {
+    @apply bg-accent text-bg px-8 py-3 font-bold uppercase tracking-widest text-xs transition-transform active:scale-95 hover:bg-accent-dark;
+  }
+
+  .btn-secondary {
+    @apply border border-white/20 bg-transparent text-white px-8 py-3 font-bold uppercase tracking-widest text-xs transition-colors hover:bg-white/5;
+  }
+
+  .status-dot {
+    @apply w-1.5 h-1.5 rounded-full;
+  }
+}
