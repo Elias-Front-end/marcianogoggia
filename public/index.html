@@ -147,8 +147,6 @@
 
         @media (max-width: 768px) {
             .navbar { padding: 1.5rem; }
-            .menu-toggle { display: block; }
-            
             .nav-links { 
                 display: flex;
                 flex-direction: column;
@@ -197,11 +195,6 @@
             <a href="mapa.html">Mapa</a>
             <a href="dashboard.html">Dashboard</a>
             <a href="admin.html">Gerenciar</a>
-        </div>
-        <div style="display:flex; gap:15px; align-items:center;">
-            <button class="menu-toggle" id="menu-toggle">
-                <i data-lucide="menu"></i>
-            </button>
         </div>
     </nav>
 
@@ -318,16 +311,6 @@
         initCanvas();
         draw();
         
-        // Mobile menu toggle
-        const menuToggle = document.getElementById('menu-toggle');
-        const navLinks = document.getElementById('nav-links');
-        
-        menuToggle.addEventListener('click', () => {
-            navLinks.classList.toggle('active');
-            const isMenuOpen = navLinks.classList.contains('active');
-            menuToggle.innerHTML = `<i data-lucide="${isMenuOpen ? 'x' : 'menu'}"></i>`;
-            lucide.createIcons();
-        });
         // Tema fixo Dark
         localStorage.setItem('theme', 'dark');
     </script>
