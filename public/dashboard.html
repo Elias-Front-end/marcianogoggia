@@ -13,6 +13,12 @@
         * { margin: 0; padding: 0; box-sizing: border-box; }
         html, body { height: 100%; overflow: hidden; font-family: 'Inter', sans-serif; background: #0a0e17; color: #fff; font-size: 12px; }
         
+        /* Fix para quadrados/linhas no mapa */
+        .leaflet-tile {
+            border: none !important;
+            outline: none !important;
+        }
+        
         /* Custom Scrollbar Premium */
         ::-webkit-scrollbar {
             width: 8px;
@@ -617,8 +623,8 @@
             
             switch(style) {
                 case 'light':
-                    url = 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png';
-                    attribution = '© CARTO';
+                    url = 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';
+                    attribution = '© OpenStreetMap';
                     break;
                 case 'sat':
                     url = 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}';
