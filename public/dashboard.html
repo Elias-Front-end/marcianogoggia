@@ -153,20 +153,34 @@
         #table-body tr:hover { background: rgba(0, 212, 255, 0.1) !important; }
         
         .marker-glow {
-            box-shadow: 0 0 15px #00ff88, 0 0 30px rgba(0,255,136,0.3);
+            box-shadow: 0 0 15px #00ff88, 0 0 30px rgba(0,255,136,0.5);
+            animation: pulse-glow 2s infinite;
+        }
+        
+        @keyframes pulse-glow {
+            0% { box-shadow: 0 0 10px #00ff88, 0 0 20px rgba(0,255,136,0.3); }
+            50% { box-shadow: 0 0 20px #00ff88, 0 0 40px rgba(0,255,136,0.6); }
+            100% { box-shadow: 0 0 10px #00ff88, 0 0 20px rgba(0,255,136,0.3); }
         }
         
         /* Marker Cluster Custom Style */
         .pr-cluster {
-            background: rgba(0, 212, 255, 0.2);
+            background: rgba(0, 212, 255, 0.3);
             border: 2px solid #00d4ff;
             border-radius: 50%;
             color: #fff;
-            font-weight: 700;
+            font-weight: 800;
             display: flex;
             align-items: center;
             justify-content: center;
-            backdrop-filter: blur(5px);
+            backdrop-filter: blur(10px);
+            box-shadow: 0 0 20px rgba(0, 212, 255, 0.4);
+            transition: all 0.3s ease;
+        }
+        .pr-cluster:hover {
+            transform: scale(1.1);
+            background: rgba(0, 212, 255, 0.5);
+            box-shadow: 0 0 30px rgba(0, 212, 255, 0.6);
         }
         .chart-widget .widget-header {
             display: flex;
@@ -240,6 +254,87 @@
                 min-width: 150px !important;
             }
         }
+
+        /* Estilos do Seletor de Mapa */
+        .map-style-switcher {
+            position: fixed;
+            bottom: 30px;
+            left: 420px; /* Posicionado após o painel lateral */
+            z-index: 1000;
+            display: flex;
+            gap: 10px;
+            background: rgba(10, 14, 23, 0.8);
+            padding: 8px;
+            border-radius: 16px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(20px);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            transition: all 0.3s ease;
+        }
+        
+        .style-btn {
+            width: 45px;
+            height: 45px;
+            border-radius: 12px;
+            border: 2px solid transparent;
+            cursor: pointer;
+            background-size: cover;
+            background-position: center;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .style-btn:hover {
+            transform: translateY(-5px);
+            border-color: rgba(0, 212, 255, 0.5);
+        }
+        
+        .style-btn.active {
+            border-color: #00d4ff;
+            box-shadow: 0 0 15px rgba(0, 212, 255, 0.4);
+        }
+        
+        .style-btn span {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: rgba(0,0,0,0.7);
+            color: white;
+            font-size: 8px;
+            padding: 2px 0;
+            text-align: center;
+            opacity: 0;
+            transition: opacity 0.3s;
+            text-transform: uppercase;
+            font-weight: 700;
+        }
+        
+        .style-btn:hover span {
+            opacity: 1;
+        }
+
+        /* Filtros Customizados para o Mapa */
+        .map-modern-gray .leaflet-tile-pane {
+            filter: grayscale(100%) invert(90%) brightness(0.9) contrast(1.1);
+        }
+        
+        .map-cyber-blue .leaflet-tile-pane {
+            filter: hue-rotate(200deg) brightness(0.8) contrast(1.2);
+        }
+
+        @media (max-width: 768px) {
+            .map-style-switcher {
+                left: 10px;
+                bottom: 120px;
+                padding: 5px;
+            }
+            .style-btn {
+                width: 35px;
+                height: 35px;
+            }
+        }
     </style>
     <!-- Lucide Icons -->
     <script src="https://unpkg.com/lucide@latest"></script>
@@ -265,6 +360,26 @@
     </div>
     
     <div id="map"></div>
+    
+    <!-- Seletor de Estilo do Mapa -->
+    <div class="map-style-switcher" id="styleSwitcher">
+        <div class="style-btn active" onclick="setMapStyle('dark')" title="Cyber Dark" style="display:flex;align-items:center;justify-content:center;background:#0a0e17;border-color:rgba(255,255,255,0.1);">
+            <i data-lucide="moon" style="width:18px;color:#00d4ff;"></i>
+            <span>Dark</span>
+        </div>
+        <div class="style-btn" onclick="setMapStyle('gray')" title="Modern Gray" style="display:flex;align-items:center;justify-content:center;background:#2c3e50;border-color:rgba(255,255,255,0.1);">
+            <i data-lucide="sun" style="width:18px;color:#fff;"></i>
+            <span>Gray</span>
+        </div>
+        <div class="style-btn" onclick="setMapStyle('night')" title="Midnight Blue" style="display:flex;align-items:center;justify-content:center;background:#1a2a6c;border-color:rgba(255,255,255,0.1);">
+            <i data-lucide="droplets" style="width:18px;color:#00d4ff;"></i>
+            <span>Night</span>
+        </div>
+        <div class="style-btn" onclick="setMapStyle('sat')" title="Satellite Vision" style="display:flex;align-items:center;justify-content:center;background:#000;border-color:rgba(255,255,255,0.1);">
+            <i data-lucide="globe" style="width:18px;color:#fff;"></i>
+            <span>Sat</span>
+        </div>
+    </div>
     
     <div class="charts-overlay">
         <div style="color:#fff;padding:10px;text-align:center;" id="loading">Carregando...</div>
@@ -456,6 +571,7 @@
             return result;
         }
         
+        var tileLayer = null;
         function initMap() {
             if (map) return;
             
@@ -471,14 +587,51 @@
                 maxBoundsViscosity: 1.0
             }).setView(SJP_CENTER, 12);
 
-            // Mapa Escuro Premium
-            L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
-                attribution: '© OpenStreetMap contributors © CARTO',
+            setMapStyle(localStorage.getItem('mapStyle') || 'dark');
+            
+            L.control.zoom({ position: 'bottomright' }).addTo(map);
+        }
+
+        function setMapStyle(style) {
+            if (tileLayer) map.removeLayer(tileLayer);
+            
+            var url, attribution, className = '';
+            
+            // Remove classes anteriores
+            document.getElementById('map').className = '';
+            
+            switch(style) {
+                case 'gray':
+                    url = 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png';
+                    attribution = '© CARTO';
+                    document.getElementById('map').classList.add('map-modern-gray');
+                    break;
+                case 'night':
+                    url = 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png';
+                    attribution = '© CARTO';
+                    document.getElementById('map').classList.add('map-cyber-blue');
+                    break;
+                case 'sat':
+                    url = 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}';
+                    attribution = '© Esri';
+                    break;
+                default: // dark
+                    url = 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png';
+                    attribution = '© CARTO';
+            }
+            
+            tileLayer = L.tileLayer(url, {
+                attribution: attribution,
                 maxZoom: 18,
                 minZoom: 11
             }).addTo(map);
             
-            L.control.zoom({ position: 'bottomright' }).addTo(map);
+            // Atualizar botões
+            document.querySelectorAll('.style-btn').forEach(btn => btn.classList.remove('active'));
+            const idx = ['dark', 'gray', 'night', 'sat'].indexOf(style);
+            if (idx !== -1) document.querySelectorAll('.style-btn')[idx].classList.add('active');
+            
+            localStorage.setItem('mapStyle', style);
         }
         
         function render() {
