@@ -394,10 +394,6 @@
             <i data-lucide="sun" style="width:18px;color:#fff;"></i>
             <span>Gray</span>
         </div>
-        <div class="style-btn" onclick="setMapStyle('night')" title="Midnight Blue" style="display:flex;align-items:center;justify-content:center;background:#1a2a6c;border-color:rgba(255,255,255,0.1);">
-            <i data-lucide="droplets" style="width:18px;color:#00d4ff;"></i>
-            <span>Night</span>
-        </div>
         <div class="style-btn" onclick="setMapStyle('sat')" title="Satellite Vision" style="display:flex;align-items:center;justify-content:center;background:#000;border-color:rgba(255,255,255,0.1);">
             <i data-lucide="globe" style="width:18px;color:#fff;"></i>
             <span>Sat</span>
@@ -629,11 +625,6 @@
                     attribution = '© CARTO';
                     document.getElementById('map').classList.add('map-modern-gray');
                     break;
-                case 'night':
-                    url = 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png';
-                    attribution = '© CARTO';
-                    document.getElementById('map').classList.add('map-cyber-blue');
-                    break;
                 case 'sat':
                     url = 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}';
                     attribution = '© Esri';
@@ -651,7 +642,7 @@
             
             // Atualizar botões
             document.querySelectorAll('.style-btn').forEach(btn => btn.classList.remove('active'));
-            const idx = ['dark', 'gray', 'night', 'sat'].indexOf(style);
+            const idx = ['dark', 'gray', 'sat'].indexOf(style);
             if (idx !== -1) document.querySelectorAll('.style-btn')[idx].classList.add('active');
             
             localStorage.setItem('mapStyle', style);
