@@ -11,16 +11,18 @@
             --primary: #00d4ff;
             --secondary: #00ff88;
             --bg: #000000;
-            --text: #ffffff;
             --glass: rgba(255, 255, 255, 0.03);
+<<<<<<< HEAD
             --navbar-bg: transparent;
+=======
+>>>>>>> parent of f682f2c (feat: implement global theme switcher and fix admin modal UI)
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { 
             font-family: 'Inter', sans-serif; 
             background: var(--bg); 
-            color: var(--text); 
+            color: #fff; 
             overflow: hidden;
             height: 100vh;
         }
@@ -46,11 +48,8 @@
 
         .navbar { 
             display: flex; justify-content: space-between; align-items: center;
-            padding: 1.5rem 4rem; 
+            padding: 2rem 4rem; 
             position: fixed; top: 0; left: 0; right: 0; z-index: 1000;
-            background: var(--navbar-bg);
-            backdrop-filter: blur(10px);
-            transition: all 0.3s;
         }
         
         .logo-container { display: flex; align-items: center; gap: 10px; }
@@ -62,21 +61,21 @@
 
         .nav-links { display: flex; gap: 2.5rem; position: absolute; left: 50%; transform: translateX(-50%); }
         .nav-links a { 
-            color: var(--text); opacity: 0.6; text-decoration: none; font-size: 0.8rem; font-weight: 800;
+            color: rgba(255, 255, 255, 0.6); text-decoration: none; font-size: 0.8rem; font-weight: 800;
             letter-spacing: 2px; text-transform: uppercase; transition: all 0.3s;
             position: relative; padding-bottom: 5px;
         }
-        .nav-links a:hover, .nav-links a.active { color: var(--text); opacity: 1; }
+        .nav-links a:hover, .nav-links a.active { color: #fff; }
         .nav-links a.active::after {
             content: ''; position: absolute; bottom: 0; left: 0; width: 100%; height: 2px; background: var(--primary);
         }
 
         .btn-connect {
-            border: 1px solid var(--primary); background: transparent; color: var(--text);
+            border: 1px solid rgba(255,255,255,0.2); background: transparent; color: #fff;
             padding: 0.6rem 1.8rem; border-radius: 4px; font-size: 0.75rem; font-weight: 800;
             letter-spacing: 2px; cursor: pointer; transition: all 0.3s;
         }
-        .btn-connect:hover { background: var(--primary); color: #000; }
+        .btn-connect:hover { background: #fff; color: #000; }
 
         /* Sync Status UI */
         .sync-status {
@@ -102,12 +101,11 @@
 
         .hero-title {
             font-size: 5.5rem; font-weight: 900; line-height: 1; margin-bottom: 2rem;
-            letter-spacing: -2px; text-transform: uppercase; color: var(--text);
+            letter-spacing: -2px; text-transform: uppercase;
         }
 
         .hero-desc {
-            max-width: 650px; font-size: 1.1rem; font-weight: 300; color: var(--text);
-            opacity: 0.6;
+            max-width: 650px; font-size: 1.1rem; font-weight: 300; color: rgba(255,255,255,0.6);
             margin-bottom: 2.5rem; line-height: 1.8;
         }
 
@@ -116,8 +114,8 @@
             display: flex; gap: 3rem; margin-bottom: 4rem; justify-content: center;
         }
         .metric-box { text-align: left; position: relative; padding-left: 15px; border-left: 1px solid rgba(0, 212, 255, 0.3); }
-        .metric-box .m-label { font-size: 0.65rem; font-weight: 800; color: var(--text); opacity: 0.4; text-transform: uppercase; letter-spacing: 2px; }
-        .metric-box .m-value { font-size: 1.8rem; font-weight: 900; color: var(--text); margin-top: 5px; font-variant-numeric: tabular-nums; }
+        .metric-box .m-label { font-size: 0.65rem; font-weight: 800; color: rgba(255,255,255,0.4); text-transform: uppercase; letter-spacing: 2px; }
+        .metric-box .m-value { font-size: 1.8rem; font-weight: 900; color: #fff; margin-top: 5px; font-variant-numeric: tabular-nums; }
         .metric-box .m-value span { font-size: 0.8rem; color: var(--primary); margin-left: 5px; }
 
         .hero-actions { display: flex; gap: 1.5rem; }
@@ -129,8 +127,8 @@
         .btn-explorar { background: var(--primary); color: #000; }
         .btn-explorar:hover { background: #00b8e6; transform: translateY(-2px); box-shadow: 0 10px 20px rgba(0,212,255,0.2); }
         
-        .btn-relatorios { border: 1px solid var(--primary); color: var(--text); }
-        .btn-relatorios:hover { background: var(--primary); color: #000; transform: translateY(-2px); }
+        .btn-relatorios { border: 1px solid rgba(255,255,255,0.2); color: #fff; }
+        .btn-relatorios:hover { background: rgba(255,255,255,0.1); transform: translateY(-2px); }
 
         /* Deco Elements */
         .lat-info {
@@ -141,8 +139,19 @@
             content: ''; position: absolute; bottom: -8px; left: 0; width: 60px; height: 1px; background: rgba(0,212,255,0.3);
         }
 
+<<<<<<< HEAD
         .theme-toggle {
             display: none;
+=======
+        /* Mobile Adjustments */
+        .menu-toggle {
+            display: none;
+            background: transparent;
+            border: none;
+            color: #fff;
+            cursor: pointer;
+            z-index: 1001;
+>>>>>>> parent of f682f2c (feat: implement global theme switcher and fix admin modal UI)
         }
 
         @media (max-width: 768px) {
@@ -198,11 +207,17 @@
             <a href="dashboard.html">Dashboard</a>
             <a href="admin.html">Gerenciar</a>
         </div>
+<<<<<<< HEAD
         <div style="display:flex; gap:15px; align-items:center;">
             <button class="menu-toggle" id="menu-toggle">
                 <i data-lucide="menu"></i>
             </button>
         </div>
+=======
+        <button class="menu-toggle" id="menu-toggle">
+            <i data-lucide="menu"></i>
+        </button>
+>>>>>>> parent of f682f2c (feat: implement global theme switcher and fix admin modal UI)
     </nav>
 
     <div class="sync-status">
@@ -328,8 +343,11 @@
             menuToggle.innerHTML = `<i data-lucide="${isMenuOpen ? 'x' : 'menu'}"></i>`;
             lucide.createIcons();
         });
+<<<<<<< HEAD
         // Tema fixo Dark
         localStorage.setItem('theme', 'dark');
+=======
+>>>>>>> parent of f682f2c (feat: implement global theme switcher and fix admin modal UI)
     </script>
 </body>
 </html>

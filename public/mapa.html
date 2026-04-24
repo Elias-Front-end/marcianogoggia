@@ -7,18 +7,23 @@
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
+<<<<<<< HEAD
         :root {
-            --bg-color: #0a0e17;
-            --text-color: #fff;
-            --navbar-bg: rgba(10, 14, 23, 0.7);
-            --card-border: rgba(255,255,255,0.05);
-            --legend-bg: rgba(10, 14, 23, 0.8);
-            --popup-bg: rgba(10, 14, 23, 0.95);
-            --accent-color: #00d4ff;
+            --bg-color: #f4f7f9;
+            --text-color: #1a1f2e;
+            --navbar-bg: rgba(255,255,255,0.8);
+            --card-border: rgba(0,0,0,0.05);
+            --legend-bg: rgba(255,255,255,0.9);
+            --popup-bg: rgba(255,255,255,0.95);
+            --accent-color: #007bff;
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: 'Inter', sans-serif; background: var(--bg-color); color: var(--text-color); height: 100vh; overflow: hidden; }
+=======
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Inter', sans-serif; background: #f4f7f9; color: #1a1f2e; height: 100vh; overflow: hidden; }
+>>>>>>> parent of f682f2c (feat: implement global theme switcher and fix admin modal UI)
         
         /* Custom Scrollbar Premium */
         ::-webkit-scrollbar {
@@ -57,8 +62,8 @@
             position: fixed; top: 0; left: 0; right: 0; z-index: 1000;
             display: flex; justify-content: space-between; align-items: center;
             padding: 1rem 2rem; 
-            background: var(--navbar-bg); backdrop-filter: blur(20px);
-            border-bottom: 1px solid var(--card-border);
+            background: rgba(255,255,255,0.8); backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(0,0,0,0.05);
             box-shadow: 0 4px 20px rgba(0,0,0,0.03);
         }
         .logo { 
@@ -100,14 +105,13 @@
             bottom: 30px;
             right: 30px;
             z-index: 1000;
-            background: var(--legend-bg);
+            background: rgba(255,255,255,0.9);
             padding: 20px;
             border-radius: 20px;
             backdrop-filter: blur(20px);
-            border: 1px solid var(--card-border);
+            border: 1px solid rgba(255,255,255,0.5);
             box-shadow: 0 10px 40px rgba(0,0,0,0.1);
             min-width: 220px;
-            color: var(--text-color);
         }
         
         .legend-title {
@@ -135,24 +139,27 @@
         .custom-marker { background: transparent; border: none; }
         
         .leaflet-popup-content-wrapper {
-            background: var(--popup-bg); color: var(--text-color);
-            border-radius: 16px; border: 1px solid var(--card-border);
+            background: rgba(255,255,255,0.95); color: #1a1f2e;
+            border-radius: 16px; border: 1px solid rgba(0,0,0,0.05);
             backdrop-filter: blur(10px);
             box-shadow: 0 10px 30px rgba(0,0,0,0.1);
         }
-        .leaflet-popup-tip { background: var(--popup-bg); }
+        .leaflet-popup-tip { background: rgba(255,255,255,0.95); }
         .leaflet-popup-content { margin: 15px; }
 
         .loading-overlay {
             position: fixed; top: 0; left: 0; right: 0; bottom: 0;
-            background: var(--bg-color); z-index: 2000; display: flex; align-items: center; justify-content: center;
+            background: #fff; z-index: 2000; display: flex; align-items: center; justify-content: center;
             transition: opacity 0.5s;
         }
 
+<<<<<<< HEAD
         .theme-toggle {
             display: none;
         }
 
+=======
+>>>>>>> parent of f682f2c (feat: implement global theme switcher and fix admin modal UI)
         /* Mobile Adjustments for Map Page */
         @media (max-width: 768px) {
             .navbar {
@@ -264,9 +271,9 @@
                 maxBoundsViscosity: 1.0
             }).setView(SJP_CENTER, 12);
             
-            // Mapa Escuro (Dark)
-            L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
-                attribution: '© CARTO',
+            // Mapa Claro (Normal)
+            tileLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '© OpenStreetMap contributors',
                 maxZoom: 18,
                 minZoom: 11
             }).addTo(map);
@@ -348,8 +355,8 @@
 
         document.addEventListener('DOMContentLoaded', init);
         
-        // Tema fixo Dark
-        localStorage.setItem('theme', 'dark');
+        // Tema fixo Light para o Mapa
+        localStorage.setItem('theme', 'light');
     </script>
 </body>
 </html>
