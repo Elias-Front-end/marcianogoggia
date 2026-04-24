@@ -687,7 +687,7 @@
                 m.bindPopup(`
                     <div style="min-width:150px; color:#fff;">
                         <b style="font-size:14px;color:#00d4ff;">${apoiador.nome || '-'}</b><br>
-                        <span>${apoiador.bairro || '-'}</span><br>
+                        <span style="font-size:12px;">${apoiador.rua || '-'}, ${apoiador.numero || 'S/N'} - ${apoiador.bairro || '-'}</span><br>
                         <div style="margin-top:10px;padding-top:10px;border-top:1px solid rgba(255,255,255,0.1);font-size:11px;">
                             <b>Engajamento:</b> ${bCount[apoiador.bairro] || 0} pessoas
                         </div>
