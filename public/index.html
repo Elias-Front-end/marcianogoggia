@@ -11,11 +11,9 @@
             --primary: #00d4ff;
             --secondary: #00ff88;
             --bg: #000000;
+            --text: #ffffff;
             --glass: rgba(255, 255, 255, 0.03);
-<<<<<<< HEAD
             --navbar-bg: transparent;
-=======
->>>>>>> parent of f682f2c (feat: implement global theme switcher and fix admin modal UI)
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -139,11 +137,6 @@
             content: ''; position: absolute; bottom: -8px; left: 0; width: 60px; height: 1px; background: rgba(0,212,255,0.3);
         }
 
-<<<<<<< HEAD
-        .theme-toggle {
-            display: none;
-=======
-        /* Mobile Adjustments */
         .menu-toggle {
             display: none;
             background: transparent;
@@ -151,7 +144,6 @@
             color: #fff;
             cursor: pointer;
             z-index: 1001;
->>>>>>> parent of f682f2c (feat: implement global theme switcher and fix admin modal UI)
         }
 
         @media (max-width: 768px) {
@@ -207,17 +199,11 @@
             <a href="dashboard.html">Dashboard</a>
             <a href="admin.html">Gerenciar</a>
         </div>
-<<<<<<< HEAD
         <div style="display:flex; gap:15px; align-items:center;">
             <button class="menu-toggle" id="menu-toggle">
                 <i data-lucide="menu"></i>
             </button>
         </div>
-=======
-        <button class="menu-toggle" id="menu-toggle">
-            <i data-lucide="menu"></i>
-        </button>
->>>>>>> parent of f682f2c (feat: implement global theme switcher and fix admin modal UI)
     </nav>
 
     <div class="sync-status">
@@ -343,11 +329,8 @@
             menuToggle.innerHTML = `<i data-lucide="${isMenuOpen ? 'x' : 'menu'}"></i>`;
             lucide.createIcons();
         });
-<<<<<<< HEAD
         // Tema fixo Dark
         localStorage.setItem('theme', 'dark');
-=======
->>>>>>> parent of f682f2c (feat: implement global theme switcher and fix admin modal UI)
     </script>
 </body>
 </html>
