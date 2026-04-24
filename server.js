@@ -12,6 +12,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 // Default URL if not provided via environment
 const DATABASE_URL = process.env.DATABASE_URL || 'mariadb://mariadb:oa6qhwd1qvc8y1uq0jap@develop_marcianogoggia:3306/marcianogoggia_db';
+const LOCATIONIQ_KEY = 'pk.49f935195ce927d0901526065edf509c';
 
 let pool;
 
@@ -49,7 +50,7 @@ async function initDB() {
             )
         `);
 
-        // Seed initial data if empty
+        // Seed initial data se estiver vazio
         const [rows] = await pool.query('SELECT COUNT(*) as count FROM apoiadores');
         if (rows[0].count === 0) {
             console.log('Inserindo cadastros iniciais...');
@@ -72,7 +73,6 @@ async function initDB() {
                 );
             }
         }
-        
         console.log('Conectado ao MariaDB e tabelas verificadas.');
     } catch (error) {
         console.error('Erro ao inicializar o banco de dados:', error);
@@ -174,101 +174,46 @@ app.get('/api/estatisticas', async (req, res) => {
     }
 });
 
-app.post('/api/recalcular-coordenadas', async (req, res) => {
-    const LOCATIONIQ_KEY = 'pk.49f935195ce927d0901526065edf509c';
-    
-    try {
-        const [apoiadores] = await pool.query('SELECT * FROM apoiadores');
-        
-        let atualizados = 0;
-        let erros = 0;
-        
-        for (const apoiador of apoiadores) {
-            const endereco = `${apoiador.rua}, ${apoiador.numero}, ${apoiador.bairro}, São José dos Pinhais, Paraná, Brasil`;
-            
-            try {
-                const encodedAddr = encodeURIComponent(endereco);
-                const response = await fetch(`https://us1.locationiq.com/v1/search.php?key=${LOCATIONIQ_KEY}&q=${encodedAddr}&format=json&limit=1&addressdetails=1`);
-                
-                const data = await response.json();
-                
-                if (data && data.length > 0 && data[0].lat && data[0].lon) {
-                    const lat = parseFloat(data[0].lat);
-                    const lng = parseFloat(data[0].lon);
-                    
-                    await pool.execute('UPDATE apoiadores SET latitude = ?, longitude = ? WHERE id = ?', 
-                        [lat, lng, apoiador.id]);
-                    atualizados++;
-                } else {
-                    erros++;
-                }
-                
-                // Rate limit: 2 req/s no LocationIQ gratuito
-                await new Promise(r => setTimeout(r, 600));
-                
-            } catch (error) {
-                console.error(`Erro ao buscar coordenadas para ${apoiador.nome}:`, error);
-                erros++;
-            }
-        }
-        
-        res.json({ 
-            message: 'Coordenadas recalculadas',
-            atualizados,
-            erros,
-            total: apoiadores.length
-        });
-    } catch (err) {
-        res.status(500).json({ error: 'Erro ao buscar apoiadores' });
-    }
-});
+
+// -------------------------------------------------------------
+// FUNÇÕES DE GEOCODIFICAÇÃO EM CASCATA
+// -------------------------------------------------------------
 
 const BAIRROS_COORDS = {
-    'Centro': [-25.5317, -49.2921],
-    'Aeroporto': [-25.5084, -49.1755],
-    'Alto da Boa Vista': [-25.5521, -49.3210],
-    'Barra do João José': [-25.4898, -49.2456],
-    'Bela Vista': [-25.5456, -49.2567],
-    'Boa Vista': [-25.5378, -49.2234],
-    'Brasil': [-25.5212, -49.2634],
-    'Cachoeirinha': [-25.5678, -49.3123],
-    'Campo Largo': [-25.4534, -49.3456],
-    'Campus': [-25.5123, -49.3234],
-    'Cidade Industrial': [-25.4834, -49.2834],
-    'Colônia Rio Grande': [-25.4123, -49.3567],
-    'Cruzeiro': [-25.5234, -49.2345],
-    'Eucaliptos': [-25.5567, -49.2934],
-    'Guabirotuba': [-25.5234, -49.3456],
-    'Inocência': [-25.4789, -49.2567],
-    'Ipê': [-25.5489, -49.2789],
-    'Jardim': [-25.5345, -49.3012],
-    'Jardim dos Eucaliptos': [-25.5623, -49.2901],
-    'Jardim Kennedy': [-25.5012, -49.2678],
-    'Jardim Maria Helena': [-25.5156, -49.2890],
-    'Muricy': [-25.4876, -49.2345],
-    'Oliveira': [-25.5432, -49.3123],
-    'Parque Industrial': [-25.4765, -49.2765],
-    'Parque São Pedro': [-25.5234, -49.3512],
-    'Pedra Grande': [-25.5765, -49.3345],
-    'Pineville': [-25.5578, -49.2654],
-    'Ponta Grossa': [-25.4654, -49.3456],
-    'Portão': [-25.5098, -49.2543],
-    'Possidônio': [-25.4567, -49.3234],
-    'Rio Pequeno': [-25.4987, -49.3345],
-    'Santo Antônio': [-25.5321, -49.2765],
-    'São Cristóvão': [-25.5156, -49.2543],
-    'São Francisco': [-25.5467, -49.2432],
-    'São João': [-25.5234, -49.2890],
-    'São Pedro': [-25.5567, -49.3089],
-    'Seara': [-25.4876, -49.2987],
-    'Taboão': [-25.5123, -49.3345],
-    'Tancredo': [-25.5423, -49.2543],
-    'Vila Formosa': [-25.4765, -49.2345],
-    'Vila Guarani': [-25.5098, -49.3123],
-    'Vila Izabel': [-25.5234, -49.2654],
-    'Vila Residencial': [-25.4987, -49.2543],
-    'Vila Velha': [-25.5312, -49.3089],
-    'Xaxim': [-25.4876, -49.3210]
+    'Centro': [-25.5317, -49.2921], 'Aeroporto': [-25.5084, -49.1755], 'Alto da Boa Vista': [-25.5521, -49.3210],
+    'Barra do João José': [-25.4898, -49.2456], 'Bela Vista': [-25.5456, -49.2567], 'Boa Vista': [-25.5378, -49.2234],
+    'Brasil': [-25.5212, -49.2634], 'Cachoeirinha': [-25.5678, -49.3123], 'Campo Largo': [-25.4534, -49.3456],
+    'Campus': [-25.5123, -49.3234], 'Cidade Industrial': [-25.4834, -49.2834], 'Colônia Rio Grande': [-25.4123, -49.3567],
+    'Cruzeiro': [-25.5234, -49.2345], 'Eucaliptos': [-25.5567, -49.2934], 'Guabirotuba': [-25.5234, -49.3456],
+    'Inocência': [-25.4789, -49.2567], 'Ipê': [-25.5489, -49.2789], 'Jardim': [-25.5345, -49.3012],
+    'Jardim dos Eucaliptos': [-25.5623, -49.2901], 'Jardim Kennedy': [-25.5012, -49.2678], 'Jardim Maria Helena': [-25.5156, -49.2890],
+    'Muricy': [-25.4876, -49.2345], 'Oliveira': [-25.5432, -49.3123], 'Parque Industrial': [-25.4765, -49.2765],
+    'Parque São Pedro': [-25.5234, -49.3512], 'Pedra Grande': [-25.5765, -49.3345], 'Pineville': [-25.5578, -49.2654],
+    'Ponta Grossa': [-25.4654, -49.3456], 'Portão': [-25.5098, -49.2543], 'Possidônio': [-25.4567, -49.3234],
+    'Rio Pequeno': [-25.4987, -49.3345], 'Santo Antônio': [-25.5321, -49.2765], 'São Cristóvão': [-25.5156, -49.2543],
+    'São Francisco': [-25.5467, -49.2432], 'São João': [-25.5234, -49.2890], 'São Pedro': [-25.5567, -49.3089],
+    'Seara': [-25.4876, -49.2987], 'Taboão': [-25.5123, -49.3345], 'Tancredo': [-25.5423, -49.2543],
+    'Vila Formosa': [-25.4765, -49.2345], 'Vila Guarani': [-25.5098, -49.3123], 'Vila Izabel': [-25.5234, -49.2654],
+    'Vila Residencial': [-25.4987, -49.2543], 'Vila Velha': [-25.5312, -49.3089], 'Xaxim': [-25.4876, -49.3210],
+    'Academia': [-25.5189, -49.2321], 'Afonso Pena': [-25.5423, -49.2756], 'Águas Belas': [-25.5567, -49.3012],
+    'Aristocrata': [-25.5298, -49.2654], 'Arujá': [-25.5489, -49.3123], 'Aviação': [-25.5084, -49.1755],
+    'Barro Preto': [-25.4765, -49.2567], 'Bom Jesus': [-25.5123, -49.3234], 'Boneca do Iguaçu': [-25.5234, -49.2890],
+    'Borda do Campo': [-25.4876, -49.3345], 'Braga': [-25.4534, -49.3210], 'Campo Largo da Roseira': [-25.4423, -49.3156],
+    'Cidade Jardim': [-25.5456, -49.2789], 'Contenda': [-25.4123, -49.3456], 'Costeira': [-25.5567, -49.2432],
+    'Del Rey': [-25.5345, -49.2567], 'Dom Rodrigo': [-25.4678, -49.2890], 'Guatupê': [-25.5234, -49.2234], 
+    'Iná': [-25.5098, -49.3123], 'Inspetor Carvalho': [-25.4987, -49.3012], 'Itália': [-25.5378, -49.2654],
+    'Jurema': [-25.5212, -49.2543], 'Ouro Fino': [-25.5567, -49.2934], 'Parque da Fonte': [-25.5623, -49.2890],
+    'Pedro Moro': [-25.5156, -49.2765], 'Quississana': [-25.4876, -49.2345], 'São Domingos': [-25.5234, -49.3089], 
+    'São Marcos': [-25.5098, -49.2234], 'Silveira da Motta': [-25.5423, -49.2432], 'Três Marias': [-25.4765, -49.2987],
+    'Zacarias': [-25.5312, -49.2654], 'Cachoeira': [-25.4234, -49.3567], 'Cachoeira de São José': [-25.4123, -49.3456],
+    'Campestre da Faxina': [-25.3987, -49.3678], 'Campina': [-25.4534, -49.3123], 'Campina do Miringuava': [-25.3898, -49.3789],
+    'Campina do Taquaral': [-25.4123, -49.3567], 'Campina dos Furtados': [-25.3765, -49.3890], 'Carioca': [-25.4567, -49.3012],
+    'Colônia Acioli': [-25.3678, -49.3956], 'Colônia Castelhanos': [-25.3543, -49.4012], 'Colônia Malhada': [-25.3456, -49.4123],
+    'Colônia Marcelino': [-25.3345, -49.4234], 'Colônia Murici': [-25.3234, -49.4345], 'Colônia Santos Andrade': [-25.3987, -49.3678], 
+    'Despique': [-25.3123, -49.4456], 'Emboque': [-25.3012, -49.4567], 'Faxina': [-25.2898, -49.4678], 
+    'Gamela': [-25.2789, -49.4789], 'Marcelino': [-25.2678, -49.4890], 'Morro Alto': [-25.2567, -49.5012], 
+    'Olho Agudo': [-25.2456, -49.5123], 'Roça Velha': [-25.2345, -49.5234], 'Roseira de São Sebastião': [-25.2234, -49.5345], 
+    'São Sebastião': [-25.2123, -49.5456]
 };
 
 function normalizar(texto) {
@@ -293,85 +238,122 @@ function similarity(s1, s2) {
     return matches / Math.max(words1.length, words2.length);
 }
 
-function validarEndereco(resultado, rua, numero, bairro) {
+function validarEndereco(resultado, rua) {
     if (!resultado || !resultado.address) return false;
     const addr = resultado.address;
     const ruaNormalizada = normalizar(rua);
-    const bairroNormalizado = normalizar(bairro);
     const ruaResultado = normalizar(addr.road || addr.pedestrian || addr.path || '');
-    const bairroResultado = normalizar(
-        addr.neighbourhood || addr.suburb || addr.quarter || addr.village || addr.town || addr.municipality || ''
-    );
-    const ruaMatch = ruaNormalizada.length > 3 && (
+    return ruaNormalizada.length > 3 && (
         ruaResultado.includes(ruaNormalizada) || 
         ruaNormalizada.includes(ruaResultado) ||
         similarity(ruaNormalizada, ruaResultado) > 0.6
     );
-    const bairroMatch = !bairroNormalizado || bairroNormalizado.length < 3 || (
-        bairroResultado.includes(bairroNormalizado) || 
-        bairroNormalizado.includes(bairroResultado) ||
-        similarity(bairroNormalizado, bairroResultado) > 0.6
-    );
-    return ruaMatch && bairroMatch;
 }
+
+function limparNumero(numero) {
+    if (!numero) return '';
+    const n = numero.toLowerCase().trim();
+    if (n === 's/n' || n === 'sn' || n === 'sem numero' || n === '0') return '';
+    return n;
+}
+
+async function buscarCoordenadasCascata(rua, numero, bairro) {
+    const numLimpo = limparNumero(numero);
+    const cidade = "São José dos Pinhais, Paraná, Brasil";
+    
+    // Filtro especial para municípios vizinhos digitados no campo de bairro
+    const isPiraquara = normalizar(bairro).includes("piraquara");
+    const isCuritiba = normalizar(bairro).includes("curitiba");
+    
+    let cidadeReal = cidade;
+    if (isPiraquara) cidadeReal = "Piraquara, Paraná, Brasil";
+    if (isCuritiba) cidadeReal = "Curitiba, Paraná, Brasil";
+    
+    const tentativas = [];
+    
+    // Tenta 1: Muito especifico (Rua, Número, Bairro, Cidade)
+    if (numLimpo && bairro) tentativas.push(`${rua}, ${numLimpo}, ${bairro}, ${cidadeReal}`);
+    
+    // Tenta 2: Rua, Bairro, Cidade (remove o número que costuma quebrar a API)
+    if (bairro) tentativas.push(`${rua}, ${bairro}, ${cidadeReal}`);
+    
+    // Tenta 3: Rua, Número, Cidade
+    if (numLimpo) tentativas.push(`${rua}, ${numLimpo}, ${cidadeReal}`);
+    
+    // Tenta 4: Rua, Cidade
+    tentativas.push(`${rua}, ${cidadeReal}`);
+
+    for (const ender of tentativas) {
+        try {
+            const encoded = encodeURIComponent(ender);
+            const res = await fetch(`https://us1.locationiq.com/v1/search.php?key=${LOCATIONIQ_KEY}&q=${encoded}&format=json&limit=1&addressdetails=1`);
+            const data = await res.json();
+            
+            if (data && data.length > 0 && data[0].lat && data[0].lon) {
+                // Apenas verifica se encontrou a rua certa na cidade
+                const valido = validarEndereco(data[0], rua);
+                if (valido) {
+                    return {
+                        lat: parseFloat(data[0].lat),
+                        lng: parseFloat(data[0].lon),
+                        // Se encontramos usando o endereço exato com número, marcamos preciso = true
+                        preciso: ender.includes(numLimpo) && numLimpo !== ''
+                    };
+                }
+            }
+        } catch (e) {
+            console.error('Erro na cascata para', ender, ':', e.message);
+        }
+        await new Promise(r => setTimeout(r, 600)); // rate limit API
+    }
+    
+    // Fallback bairro fixo
+    const bairroLower = bairro ? bairro.toLowerCase().trim() : '';
+    if (BAIRROS_COORDS[bairroLower]) {
+        const [lat, lng] = BAIRROS_COORDS[bairroLower];
+        return { lat, lng, preciso: false };
+    }
+    
+    return { lat: -25.5317, lng: -49.2921, preciso: false };
+}
+
+
+// -------------------------------------------------------------
+// ROTAS DE COORDENADAS
+// -------------------------------------------------------------
+
+app.post('/api/recalcular-coordenadas', async (req, res) => {
+    try {
+        const [apoiadores] = await pool.query('SELECT * FROM apoiadores');
+        
+        let atualizados = 0;
+        let erros = 0;
+        
+        for (const apoiador of apoiadores) {
+            const resultado = await buscarCoordenadasCascata(apoiador.rua, apoiador.numero, apoiador.bairro);
+            
+            if (resultado && resultado.lat) {
+                await pool.execute('UPDATE apoiadores SET latitude = ?, longitude = ?, coordenadas_precisas = ? WHERE id = ?', 
+                    [resultado.lat, resultado.lng, resultado.preciso ? 1 : 0, apoiador.id]);
+                atualizados++;
+            } else {
+                erros++;
+            }
+        }
+        
+        res.json({ message: 'Coordenadas recalculadas', atualizados, erros, total: apoiadores.length });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: 'Erro ao buscar apoiadores' });
+    }
+});
 
 app.get('/api/geocodificar', async (req, res) => {
     const { rua, numero, bairro } = req.query;
+    if (!rua || !bairro) return res.status(400).json({ error: 'Rua e bairro são obrigatórios' });
     
-    if (!rua || !numero || !bairro) {
-        return res.status(400).json({ error: 'Rua, número e bairro são obrigatórios' });
-    }
-    
-    const LOCATIONIQ_KEY = 'pk.49f935195ce927d0901526065edf509c';
-    
-    try {
-        const enderecoSJP = `${rua}, ${numero}, ${bairro}, São José dos Pinhais, Paraná, Brasil`;
-        const encodedAddr = encodeURIComponent(enderecoSJP);
-        const response = await fetch(`https://us1.locationiq.com/v1/search.php?key=${LOCATIONIQ_KEY}&q=${encodedAddr}&format=json&limit=1&addressdetails=1`);
-        
-        const data = await response.json();
-        
-        if (data && data.length > 0 && data[0].lat && data[0].lon) {
-            const valido = validarEndereco(data[0], rua, numero, bairro);
-            return res.json({
-                lat: parseFloat(data[0].lat),
-                lng: parseFloat(data[0].lon),
-                preciso: valido
-            });
-        }
-        
-        const enderecoGeral = `${rua}, ${numero}, ${bairro}, Paraná, Brasil`;
-        const encodedAddr2 = encodeURIComponent(enderecoGeral);
-        const response2 = await fetch(`https://us1.locationiq.com/v1/search.php?key=${LOCATIONIQ_KEY}&q=${encodedAddr2}&format=json&limit=1&addressdetails=1`);
-        
-        const data2 = await response2.json();
-        
-        if (data2 && data2.length > 0 && data2[0].lat && data2[0].lon) {
-            const valido = validarEndereco(data2[0], rua, numero, bairro);
-            return res.json({
-                lat: parseFloat(data2[0].lat),
-                lng: parseFloat(data2[0].lon),
-                preciso: valido
-            });
-        }
-        
-        const bairroLower = bairro.toLowerCase().trim();
-        if (bairro && BAIRROS_COORDS[bairroLower]) {
-            const coords = BAIRROS_COORDS[bairroLower];
-            return res.json({ lat: coords[0], lng: coords[1], preciso: false });
-        }
-        
-        return res.json({ lat: -25.5317, lng: -49.2921, preciso: false });
-        
-    } catch (error) {
-        console.error('Erro geocodificação:', error);
-        const bairroLower = bairro.toLowerCase().trim();
-        if (bairro && BAIRROS_COORDS[bairroLower]) {
-            const coords = BAIRROS_COORDS[bairroLower];
-            return res.json({ lat: coords[0], lng: coords[1], preciso: false });
-        }
-        res.json({ lat: -25.5317, lng: -49.2921, preciso: false });
-    }
+    const result = await buscarCoordenadasCascata(rua, numero, bairro);
+    res.json(result);
 });
 
 app.get('/api/coordenadas-cache/get', async (req, res) => {
@@ -380,13 +362,13 @@ app.get('/api/coordenadas-cache/get', async (req, res) => {
         if (!rua || !bairro) return res.status(400).json({ error: 'Rua e bairro são obrigatórios' });
         
         const ruaNorm = rua.toLowerCase().trim();
-        const numeroNorm = numero ? numero.toLowerCase().trim() : '';
+        const numLimpo = limparNumero(numero);
         const bairroNorm = bairro.toLowerCase().trim();
         
         const [rows] = await pool.execute(`
             SELECT latitude, longitude, preciso FROM coordenadas_cache 
             WHERE LOWER(rua) = ? AND LOWER(IFNULL(numero, '')) = ? AND LOWER(bairro) = ?
-        `, [ruaNorm, numeroNorm, bairroNorm]);
+        `, [ruaNorm, numLimpo, bairroNorm]);
         
         if (rows.length > 0) {
             return res.json({
@@ -409,13 +391,15 @@ app.post('/api/coordenadas-cache/save', async (req, res) => {
             return res.status(400).json({ error: 'Dados incompletos' });
         }
         
+        const numLimpo = limparNumero(numero);
+        
         await pool.execute(`
             INSERT INTO coordenadas_cache (rua, numero, bairro, latitude, longitude, preciso)
             VALUES (?, ?, ?, ?, ?, ?)
             ON DUPLICATE KEY UPDATE latitude = VALUES(latitude), longitude = VALUES(longitude), preciso = VALUES(preciso)
         `, [
             rua.toLowerCase().trim(),
-            numero ? numero.toLowerCase().trim() : null,
+            numLimpo ? numLimpo : null,
             bairro.toLowerCase().trim(),
             latitude,
             longitude,
@@ -438,22 +422,17 @@ app.get('/api/coordenadas-cache', async (req, res) => {
 
 app.get('/api/geocodificar-com-cache', async (req, res) => {
     const { rua, numero, bairro } = req.query;
-    
-    if (!rua || !numero || !bairro) {
-        return res.status(400).json({ error: 'Rua, número e bairro são obrigatórios' });
-    }
-    
-    const LOCATIONIQ_KEY = 'pk.49f935195ce927d0901526065edf509c';
+    if (!rua || !bairro) return res.status(400).json({ error: 'Rua e bairro são obrigatórios' });
     
     const ruaNorm = rua.toLowerCase().trim();
-    const numeroNorm = numero ? numero.toLowerCase().trim() : '';
+    const numLimpo = limparNumero(numero);
     const bairroNorm = bairro.toLowerCase().trim();
     
     try {
         const [cachedRows] = await pool.execute(`
             SELECT latitude, longitude, preciso FROM coordenadas_cache 
             WHERE LOWER(rua) = ? AND LOWER(IFNULL(numero, '')) = ? AND LOWER(bairro) = ?
-        `, [ruaNorm, numeroNorm, bairroNorm]);
+        `, [ruaNorm, numLimpo, bairroNorm]);
         
         if (cachedRows.length > 0) {
             return res.json({
@@ -464,58 +443,19 @@ app.get('/api/geocodificar-com-cache', async (req, res) => {
             });
         }
         
-        const enderecoSJP = `${rua}, ${numero}, ${bairro}, São José dos Pinhais, Paraná, Brasil`;
-        const encodedAddr = encodeURIComponent(enderecoSJP);
-        const response = await fetch(`https://us1.locationiq.com/v1/search.php?key=${LOCATIONIQ_KEY}&q=${encodedAddr}&format=json&limit=1&addressdetails=1`);
-        
-        let data = await response.json();
-        let valido = false;
-        
-        if (data && data.length > 0 && data[0].lat && data[0].lon) {
-            valido = validarEndereco(data[0], rua, numero, bairro);
-        } else {
-            const enderecoGeral = `${rua}, ${numero}, ${bairro}, Paraná, Brasil`;
-            const encodedAddr2 = encodeURIComponent(enderecoGeral);
-            const response2 = await fetch(`https://us1.locationiq.com/v1/search.php?key=${LOCATIONIQ_KEY}&q=${encodedAddr2}&format=json&limit=1&addressdetails=1`);
-            data = await response2.json();
-            if (data && data.length > 0 && data[0].lat && data[0].lon) {
-                valido = validarEndereco(data[0], rua, numero, bairro);
-            }
-        }
-        
-        let lat, lng;
-        let preciso = valido;
-        
-        if (data && data.length > 0 && data[0].lat && data[0].lon) {
-            lat = parseFloat(data[0].lat);
-            lng = parseFloat(data[0].lon);
-        } else {
-            const bairroLower = bairro.toLowerCase().trim();
-            if (BAIRROS_COORDS[bairroLower]) {
-                [lat, lng] = BAIRROS_COORDS[bairroLower];
-            } else {
-                lat = -25.5317;
-                lng = -49.2921;
-            }
-            preciso = false;
-        }
+        const result = await buscarCoordenadasCascata(rua, numero, bairro);
         
         await pool.execute(`
             INSERT INTO coordenadas_cache (rua, numero, bairro, latitude, longitude, preciso)
             VALUES (?, ?, ?, ?, ?, ?)
             ON DUPLICATE KEY UPDATE latitude = VALUES(latitude), longitude = VALUES(longitude), preciso = VALUES(preciso)
-        `, [ruaNorm, numeroNorm || null, bairroNorm, lat, lng, preciso]);
+        `, [ruaNorm, numLimpo || null, bairroNorm, result.lat, result.lng, result.preciso]);
         
-        res.json({ lat, lng, preciso, fromCache: false });
+        res.json({ ...result, fromCache: false });
         
     } catch (error) {
-        console.error('Erro geocodificação:', error);
-        const bairroLower = bairro.toLowerCase().trim();
-        if (BAIRROS_COORDS[bairroLower]) {
-            const [lat, lng] = BAIRROS_COORDS[bairroLower];
-            return res.json({ lat, lng, preciso: false, fromCache: false });
-        }
-        res.json({ lat: -25.5317, lng: -49.2921, preciso: false, fromCache: false });
+        console.error('Erro na API com cache:', error);
+        res.status(500).json({ error: 'Erro interno na geocodificação' });
     }
 });
 
@@ -524,5 +464,5 @@ app.get('*', (req, res) => {
 });
 
 app.listen(PORT, () => {
-    console.log(`Servidor rodando em http://localhost:${PORT}`);
+    console.log(`Servidor rodando na porta ${PORT}`);
 });
