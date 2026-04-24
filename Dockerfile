@@ -12,8 +12,6 @@ RUN npm install
 # Copiar o restante do código
 COPY . .
 
-# Garantir que o banco de dados seja gravável se ele for copiado
-RUN chmod 666 apoiadores.db || true
 
 # Porta padrão
 ENV PORT=3000
