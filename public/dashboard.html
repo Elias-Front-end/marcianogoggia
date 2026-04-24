@@ -339,10 +339,6 @@
         }
 
         /* Filtros Customizados para o Mapa */
-        .map-modern-gray .leaflet-tile-pane {
-            filter: grayscale(100%) invert(90%) brightness(0.9) contrast(1.1);
-        }
-        
         .map-cyber-blue .leaflet-tile-pane {
             filter: hue-rotate(200deg) brightness(0.8) contrast(1.2);
         }
@@ -390,9 +386,9 @@
             <i data-lucide="moon" style="width:18px;color:#00d4ff;"></i>
             <span>Dark</span>
         </div>
-        <div class="style-btn" onclick="setMapStyle('gray')" title="Modern Gray" style="display:flex;align-items:center;justify-content:center;background:#2c3e50;border-color:rgba(255,255,255,0.1);">
-            <i data-lucide="sun" style="width:18px;color:#fff;"></i>
-            <span>Gray</span>
+        <div class="style-btn" onclick="setMapStyle('light')" title="Mapa Normal" style="display:flex;align-items:center;justify-content:center;background:#fff;border-color:rgba(0,0,0,0.1);">
+            <i data-lucide="map" style="width:18px;color:#00d4ff;"></i>
+            <span>Mapa</span>
         </div>
         <div class="style-btn" onclick="setMapStyle('sat')" title="Satellite Vision" style="display:flex;align-items:center;justify-content:center;background:#000;border-color:rgba(255,255,255,0.1);">
             <i data-lucide="globe" style="width:18px;color:#fff;"></i>
@@ -620,10 +616,9 @@
             document.getElementById('map').className = '';
             
             switch(style) {
-                case 'gray':
-                    url = 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png';
+                case 'light':
+                    url = 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png';
                     attribution = '© CARTO';
-                    document.getElementById('map').classList.add('map-modern-gray');
                     break;
                 case 'sat':
                     url = 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}';
@@ -642,7 +637,7 @@
             
             // Atualizar botões
             document.querySelectorAll('.style-btn').forEach(btn => btn.classList.remove('active'));
-            const idx = ['dark', 'gray', 'sat'].indexOf(style);
+            const idx = ['dark', 'light', 'sat'].indexOf(style);
             if (idx !== -1) document.querySelectorAll('.style-btn')[idx].classList.add('active');
             
             localStorage.setItem('mapStyle', style);
