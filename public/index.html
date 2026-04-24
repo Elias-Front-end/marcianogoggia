@@ -136,9 +136,48 @@
         }
 
         /* Mobile Adjustments */
+        .menu-toggle {
+            display: none;
+            background: transparent;
+            border: none;
+            color: #fff;
+            cursor: pointer;
+            z-index: 1001;
+        }
+
         @media (max-width: 768px) {
             .navbar { padding: 1.5rem; }
-            .nav-links { display: none; }
+            .menu-toggle { display: block; }
+            
+            .nav-links { 
+                display: flex;
+                flex-direction: column;
+                position: fixed;
+                top: 0;
+                right: -100%;
+                width: 250px;
+                height: 100vh;
+                background: rgba(0, 0, 0, 0.95);
+                backdrop-filter: blur(10px);
+                border-left: 1px solid rgba(255, 255, 255, 0.1);
+                padding-top: 5rem;
+                transition: right 0.3s ease;
+                transform: none;
+                left: auto;
+                align-items: center;
+                z-index: 1000;
+            }
+            
+            .nav-links.active {
+                right: 0;
+            }
+            
+            .intel-metrics {
+                flex-direction: column;
+                gap: 1.5rem;
+                align-items: center;
+            }
+            
             .hero-title { font-size: 3rem; }
             .hero-actions { flex-direction: column; width: 100%; max-width: 300px; }
             .sync-status, .lat-info { display: none; }
@@ -154,11 +193,14 @@
             <div class="logo-icon"><i data-lucide="zap" style="width:16px; height:16px;"></i></div>
             <div class="logo-text">Marciano Goggia</div>
         </div>
-        <div class="nav-links">
+        <div class="nav-links" id="nav-links">
             <a href="mapa.html">Mapa</a>
             <a href="dashboard.html">Dashboard</a>
             <a href="admin.html">Gerenciar</a>
         </div>
+        <button class="menu-toggle" id="menu-toggle">
+            <i data-lucide="menu"></i>
+        </button>
     </nav>
 
     <div class="sync-status">
@@ -273,6 +315,17 @@
         window.addEventListener('resize', initCanvas);
         initCanvas();
         draw();
+        
+        // Mobile menu toggle
+        const menuToggle = document.getElementById('menu-toggle');
+        const navLinks = document.getElementById('nav-links');
+        
+        menuToggle.addEventListener('click', () => {
+            navLinks.classList.toggle('active');
+            const isMenuOpen = navLinks.classList.contains('active');
+            menuToggle.innerHTML = `<i data-lucide="${isMenuOpen ? 'x' : 'menu'}"></i>`;
+            lucide.createIcons();
+        });
     </script>
 </body>
 </html>

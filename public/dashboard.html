@@ -213,6 +213,33 @@
             height: 14px;
             border-radius: 3px;
         }
+
+        /* Mobile Adjustments for Dashboard */
+        @media (max-width: 768px) {
+            .charts-overlay {
+                width: 90%;
+                left: 5%;
+                right: 5%;
+                top: 100px;
+                padding: 15px;
+            }
+            .stats-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+            .top-bar {
+                flex-direction: column;
+                align-items: flex-start;
+                top: 50px;
+            }
+            .top-bar .filters {
+                margin-top: 10px;
+            }
+            #map-legend {
+                bottom: 10px !important;
+                right: 10px !important;
+                min-width: 150px !important;
+            }
+        }
     </style>
     <!-- Lucide Icons -->
     <script src="https://unpkg.com/lucide@latest"></script>
@@ -267,7 +294,7 @@
             <div class="widget-header">
                 <h3>Ranking de Engajamento</h3>
             </div>
-            <div style="max-height: 200px; overflow-y: auto; background: rgba(255,255,255,0.05); border-radius: 8px; padding: 5px;">
+            <div class="table-responsive" style="max-height: 200px; overflow-y: auto; background: rgba(255,255,255,0.05); border-radius: 8px; padding: 5px;">
                 <table style="width: 100%; border-collapse: collapse; font-size: 10px; color: #fff;">
                     <thead style="position: sticky; top: 0; background: #1a1f2e; color: #00d4ff;">
                         <tr>
