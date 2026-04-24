@@ -16,15 +16,6 @@
             --navbar-bg: transparent;
         }
 
-        body.light-theme {
-            --bg: #f8fafc;
-            --text: #1e293b;
-            --primary: #0ea5e9;
-            --secondary: #10b981;
-            --glass: rgba(0, 0, 0, 0.05);
-            --navbar-bg: rgba(255, 255, 255, 0.8);
-        }
-
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { 
             font-family: 'Inter', sans-serif; 
@@ -32,7 +23,6 @@
             color: var(--text); 
             overflow: hidden;
             height: 100vh;
-            transition: background 0.3s, color 0.3s;
         }
 
         /* Hero Background with Space Earth */
@@ -152,29 +142,7 @@
         }
 
         .theme-toggle {
-            background: var(--glass);
-            border: 1px solid var(--primary);
-            color: var(--text);
-            padding: 8px 15px;
-            border-radius: 4px;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            font-weight: 800;
-            font-size: 0.7rem;
-            letter-spacing: 1px;
-            text-transform: uppercase;
-            transition: all 0.3s;
-        }
-        .theme-toggle:hover {
-            background: var(--primary);
-            color: #000;
-        }
-
-        body.light-theme .hero-bg {
-            filter: brightness(1.1) grayscale(0.2);
-            opacity: 0.5;
+            display: none;
         }
 
         @media (max-width: 768px) {
@@ -231,10 +199,6 @@
             <a href="admin.html">Gerenciar</a>
         </div>
         <div style="display:flex; gap:15px; align-items:center;">
-            <button class="theme-toggle" onclick="toggleTheme()" id="themeToggle">
-                <i data-lucide="sun" id="themeIcon"></i>
-                <span id="themeText">Claro</span>
-            </button>
             <button class="menu-toggle" id="menu-toggle">
                 <i data-lucide="menu"></i>
             </button>
@@ -364,44 +328,8 @@
             menuToggle.innerHTML = `<i data-lucide="${isMenuOpen ? 'x' : 'menu'}"></i>`;
             lucide.createIcons();
         });
-        function toggleTheme() {
-            const body = document.body;
-            const isLight = body.classList.toggle('light-theme');
-            localStorage.setItem('theme', isLight ? 'light' : 'dark');
-            updateThemeUI(isLight);
-            localStorage.setItem('theme_changed', Date.now());
-        }
-
-        function updateThemeUI(isLight) {
-            const icon = document.getElementById('themeIcon');
-            const text = document.getElementById('themeText');
-            if (icon && text) {
-                icon.setAttribute('data-lucide', isLight ? 'moon' : 'sun');
-                text.textContent = isLight ? 'Escuro' : 'Claro';
-                lucide.createIcons();
-            }
-        }
-
-        (function() {
-            const savedTheme = localStorage.getItem('theme');
-            if (savedTheme === 'light') {
-                document.body.classList.add('light-theme');
-                updateThemeUI(true);
-            }
-        })();
-
-        window.addEventListener('storage', (e) => {
-            if (e.key === 'theme_changed') {
-                const savedTheme = localStorage.getItem('theme');
-                const isLight = savedTheme === 'light';
-                if (isLight) {
-                    document.body.classList.add('light-theme');
-                } else {
-                    document.body.classList.remove('light-theme');
-                }
-                updateThemeUI(isLight);
-            }
-        });
+        // Tema fixo Dark
+        localStorage.setItem('theme', 'dark');
     </script>
 </body>
 </html>

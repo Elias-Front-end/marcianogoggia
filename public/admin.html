@@ -22,21 +22,8 @@
             --table-hover: rgba(0, 212, 255, 0.03);
         }
 
-        body.light-theme {
-            --bg-color: #f8fafc;
-            --text-color: #1e293b;
-            --card-bg: #ffffff;
-            --card-border: #e2e8f0;
-            --accent-color: #0ea5e9;
-            --navbar-bg: rgba(255, 255, 255, 0.8);
-            --modal-bg: #ffffff;
-            --input-bg: #f1f5f9;
-            --input-border: #cbd5e1;
-            --table-hover: #f1f5f9;
-        }
-
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        html, body { height: 100%; font-family: 'Inter', sans-serif; background: var(--bg-color); color: var(--text-color); font-size: 14px; overflow-x: hidden; transition: background 0.3s, color 0.3s; }
+        html, body { height: 100%; font-family: 'Inter', sans-serif; background: var(--bg-color); color: var(--text-color); font-size: 14px; overflow-x: hidden; }
         
         /* Custom Scrollbar Premium */
         ::-webkit-scrollbar {
@@ -349,20 +336,7 @@
         .btn-secondary:hover { background: rgba(128,128,128,0.3); }
 
         .theme-toggle {
-            background: var(--card-bg);
-            border: 1px solid var(--card-border);
-            color: var(--text-color);
-            padding: 8px 12px;
-            border-radius: 10px;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            font-weight: 600;
-            transition: all 0.3s;
-        }
-        .theme-toggle:hover {
-            border-color: var(--accent-color);
+            display: none;
         }
         
         @media (max-width: 768px) {
@@ -411,10 +385,6 @@
     <nav class="navbar">
         <div class="logo">Gerenciar <span>Apoiadores</span></div>
         <div style="display:flex; gap:15px; align-items:center;">
-            <button class="theme-toggle" onclick="toggleTheme()" id="themeToggle">
-                <i data-lucide="sun" id="themeIcon"></i>
-                <span id="themeText">Claro</span>
-            </button>
             <a href="index.html" class="btn-voltar">
                 <i data-lucide="arrow-left" style="width:16px;"></i> Voltar
             </a>
@@ -623,47 +593,8 @@
         // Coordenadas padrão de São José dos Pinhais
         const SJP_CENTER = { lat: -25.5317, lng: -49.2921 };
         
-        function toggleTheme() {
-            const body = document.body;
-            const isLight = body.classList.toggle('light-theme');
-            localStorage.setItem('theme', isLight ? 'light' : 'dark');
-            updateThemeUI(isLight);
-            
-            // Notificar outras abas
-            localStorage.setItem('theme_changed', Date.now());
-        }
-
-        function updateThemeUI(isLight) {
-            const icon = document.getElementById('themeIcon');
-            const text = document.getElementById('themeText');
-            if (icon && text) {
-                icon.setAttribute('data-lucide', isLight ? 'moon' : 'sun');
-                text.textContent = isLight ? 'Escuro' : 'Claro';
-                lucide.createIcons();
-            }
-        }
-
-        // Inicializar Tema
-        (function() {
-            const savedTheme = localStorage.getItem('theme');
-            if (savedTheme === 'light') {
-                document.body.classList.add('light-theme');
-                updateThemeUI(true);
-            }
-        })();
-
-        window.addEventListener('storage', (e) => {
-            if (e.key === 'theme_changed') {
-                const savedTheme = localStorage.getItem('theme');
-                if (savedTheme === 'light') {
-                    document.body.classList.add('light-theme');
-                    updateThemeUI(true);
-                } else {
-                    document.body.classList.remove('light-theme');
-                    updateThemeUI(false);
-                }
-            }
-        });
+        // Tema fixo Dark
+        localStorage.setItem('theme', 'dark');
         
         // LocationIQ API Key - obter em https://locationiq.com/
         const LOCATIONIQ_KEY = 'pk.49f935195ce927d0901526065edf509c';
