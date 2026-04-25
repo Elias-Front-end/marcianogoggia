@@ -2,6 +2,8 @@ const express = require('express');
 const mysql = require('mysql2/promise');
 const cors = require('cors');
 const path = require('path');
+const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -13,6 +15,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 // Default URL if not provided via environment
 const DATABASE_URL = process.env.DATABASE_URL || 'mariadb://mariadb:oa6qhwd1qvc8y1uq0jap@develop_marcianogoggia:3306/marcianogoggia_db';
 const LOCATIONIQ_KEY = 'pk.49f935195ce927d0901526065edf509c';
+const JWT_SECRET = process.env.JWT_SECRET || 'marciano_goggia_super_secret_2025';
 
 let pool;
 
@@ -50,6 +53,30 @@ async function initDB() {
             )
         `);
 
+        await pool.query(`
+            CREATE TABLE IF NOT EXISTS usuarios (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                nome VARCHAR(255) NOT NULL,
+                username VARCHAR(100) NOT NULL UNIQUE,
+                senha_hash VARCHAR(255) NOT NULL,
+                papel ENUM('admin','editor','visualizador') DEFAULT 'editor',
+                ativo BOOLEAN DEFAULT TRUE,
+                criado_em DATETIME DEFAULT CURRENT_TIMESTAMP,
+                ultimo_login DATETIME
+            )
+        `);
+
+        // Cria usuário admin padrão se não existir
+        const [uRows] = await pool.query('SELECT COUNT(*) as count FROM usuarios');
+        if (uRows[0].count === 0) {
+            const hash = await bcrypt.hash('admin123', 10);
+            await pool.execute(
+                'INSERT INTO usuarios (nome, username, senha_hash, papel) VALUES (?, ?, ?, ?)',
+                ['Administrador', 'admin', hash, 'admin']
+            );
+            console.log('Usuário admin criado: admin / admin123');
+        }
+
         // Seed initial data se estiver vazio
         const [rows] = await pool.query('SELECT COUNT(*) as count FROM apoiadores');
         if (rows[0].count === 0) {
@@ -80,6 +107,131 @@ async function initDB() {
 }
 
 initDB();
+
+// -------------------------------------------------------------
+// MIDDLEWARE DE AUTENTICAÇÃO
+// -------------------------------------------------------------
+
+function authMiddleware(req, res, next) {
+    const auth = req.headers['authorization'];
+    if (!auth || !auth.startsWith('Bearer ')) {
+        return res.status(401).json({ error: 'Não autorizado' });
+    }
+    try {
+        const token = auth.split(' ')[1];
+        req.user = jwt.verify(token, JWT_SECRET);
+        next();
+    } catch {
+        return res.status(401).json({ error: 'Token inválido ou expirado' });
+    }
+}
+
+function adminOnly(req, res, next) {
+    if (req.user.papel !== 'admin') {
+        return res.status(403).json({ error: 'Apenas administradores' });
+    }
+    next();
+}
+
+// -------------------------------------------------------------
+// ROTAS DE AUTENTICAÇÃO
+// -------------------------------------------------------------
+
+app.post('/api/auth/login', async (req, res) => {
+    try {
+        const { username, senha } = req.body;
+        if (!username || !senha) return res.status(400).json({ error: 'Usuário e senha obrigatórios' });
+
+        const [rows] = await pool.execute('SELECT * FROM usuarios WHERE username = ? AND ativo = 1', [username]);
+        if (rows.length === 0) return res.status(401).json({ error: 'Credenciais inválidas' });
+
+        const usuario = rows[0];
+        const senhaOk = await bcrypt.compare(senha, usuario.senha_hash);
+        if (!senhaOk) return res.status(401).json({ error: 'Credenciais inválidas' });
+
+        await pool.execute('UPDATE usuarios SET ultimo_login = NOW() WHERE id = ?', [usuario.id]);
+
+        const token = jwt.sign(
+            { id: usuario.id, username: usuario.username, nome: usuario.nome, papel: usuario.papel },
+            JWT_SECRET,
+            { expiresIn: '8h' }
+        );
+
+        res.json({ token, usuario: { id: usuario.id, nome: usuario.nome, username: usuario.username, papel: usuario.papel } });
+    } catch (err) {
+        console.error('Erro no login:', err);
+        res.status(500).json({ error: 'Erro interno' });
+    }
+});
+
+app.get('/api/auth/me', authMiddleware, (req, res) => {
+    res.json(req.user);
+});
+
+// -------------------------------------------------------------
+// ROTAS DE GERENCIAMENTO DE USUÁRIOS
+// -------------------------------------------------------------
+
+app.get('/api/usuarios', authMiddleware, adminOnly, async (req, res) => {
+    try {
+        const [rows] = await pool.query('SELECT id, nome, username, papel, ativo, criado_em, ultimo_login FROM usuarios ORDER BY id DESC');
+        res.json(rows);
+    } catch (err) {
+        res.status(500).json({ error: 'Erro ao listar usuários' });
+    }
+});
+
+app.post('/api/usuarios', authMiddleware, adminOnly, async (req, res) => {
+    try {
+        const { nome, username, senha, papel } = req.body;
+        if (!nome || !username || !senha) return res.status(400).json({ error: 'Nome, usuário e senha são obrigatórios' });
+        const hash = await bcrypt.hash(senha, 10);
+        const [result] = await pool.execute(
+            'INSERT INTO usuarios (nome, username, senha_hash, papel) VALUES (?, ?, ?, ?)',
+            [nome, username, hash, papel || 'editor']
+        );
+        res.status(201).json({ id: result.insertId, message: 'Usuário criado com sucesso' });
+    } catch (err) {
+        if (err.code === 'ER_DUP_ENTRY') return res.status(409).json({ error: 'Nome de usuário já existe' });
+        res.status(500).json({ error: 'Erro ao criar usuário' });
+    }
+});
+
+app.put('/api/usuarios/:id', authMiddleware, adminOnly, async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { nome, username, senha, papel, ativo } = req.body;
+        if (!nome || !username) return res.status(400).json({ error: 'Nome e usuário são obrigatórios' });
+
+        if (senha) {
+            const hash = await bcrypt.hash(senha, 10);
+            await pool.execute(
+                'UPDATE usuarios SET nome=?, username=?, senha_hash=?, papel=?, ativo=? WHERE id=?',
+                [nome, username, hash, papel || 'editor', ativo !== false ? 1 : 0, id]
+            );
+        } else {
+            await pool.execute(
+                'UPDATE usuarios SET nome=?, username=?, papel=?, ativo=? WHERE id=?',
+                [nome, username, papel || 'editor', ativo !== false ? 1 : 0, id]
+            );
+        }
+        res.json({ message: 'Usuário atualizado com sucesso' });
+    } catch (err) {
+        if (err.code === 'ER_DUP_ENTRY') return res.status(409).json({ error: 'Nome de usuário já existe' });
+        res.status(500).json({ error: 'Erro ao atualizar usuário' });
+    }
+});
+
+app.delete('/api/usuarios/:id', authMiddleware, adminOnly, async (req, res) => {
+    try {
+        const { id } = req.params;
+        if (parseInt(id) === req.user.id) return res.status(400).json({ error: 'Não pode excluir seu próprio usuário' });
+        await pool.execute('DELETE FROM usuarios WHERE id = ?', [id]);
+        res.json({ message: 'Usuário excluído com sucesso' });
+    } catch (err) {
+        res.status(500).json({ error: 'Erro ao excluir usuário' });
+    }
+});
 
 app.post('/api/apoiadores', async (req, res) => {
     try {
