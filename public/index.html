@@ -11,6 +11,7 @@
             window.location.href = 'login.html';
         }
     </script>
+    <script src="js/auth.js"></script>
     <style>
         :root {
             --primary: #00d4ff;
@@ -205,6 +206,7 @@
             <a href="admin.html">Gerenciar</a>
         </div>
         <div style="display:flex; gap:15px; align-items:center;">
+            <div id="userBarContainer"></div>
             <button class="menu-toggle" id="menu-toggle">
                 <i data-lucide="menu"></i>
             </button>
@@ -336,6 +338,12 @@
         });
         // Tema fixo Dark
         localStorage.setItem('theme', 'dark');
+        
+        // Inject user bar
+        if (window.Auth) {
+            Auth.injectUserBar('#userBarContainer');
+            lucide.createIcons();
+        }
     </script>
 </body>
 </html>

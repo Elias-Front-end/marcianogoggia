@@ -43,12 +43,17 @@ const Auth = (() => {
     }
 
     /** Injeta o nome do usuário e botão logout na navbar */
-    function injectUserBar(navbarSelector = '.navbar') {
+    function injectUserBar(selector = '.navbar') {
         const usuario = getUsuario();
         if (!usuario) return;
 
-        const navbar = document.querySelector(navbarSelector);
-        if (!navbar) return;
+        let container;
+        if (selector.startsWith('#')) {
+            container = document.getElementById(selector.substring(1));
+        } else {
+            container = document.querySelector(selector);
+        }
+        if (!container) return;
 
         const papel = { admin: '🛡️ Admin', editor: '✏️ Editor', visualizador: '👁️ Viewer' };
 
@@ -71,8 +76,8 @@ const Auth = (() => {
             </button>
         `;
 
-        // Insere antes do último elemento da navbar (ou ao final)
-        navbar.appendChild(userBar);
+        // Insere no container especificado
+        container.appendChild(userBar);
     }
 
     return { getToken, getUsuario, logout, requireAuth, headers, injectUserBar };
