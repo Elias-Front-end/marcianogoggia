@@ -69,12 +69,12 @@ async function initDB() {
         // Cria usuário admin padrão se não existir
         const [uRows] = await pool.query('SELECT COUNT(*) as count FROM usuarios');
         if (uRows[0].count === 0) {
-            const hash = await bcrypt.hash('admin123', 10);
+            const hash = await bcrypt.hash('marcianogoggia123', 10);
             await pool.execute(
                 'INSERT INTO usuarios (nome, username, senha_hash, papel) VALUES (?, ?, ?, ?)',
-                ['Administrador', 'admin', hash, 'admin']
+                ['Marciano Goggia', 'marcianoadmin', hash, 'admin']
             );
-            console.log('Usuário admin criado: admin / admin123');
+            console.log('Usuário admin criado: marcianoadmin / marcianogoggia123');
         }
 
         // Seed initial data se estiver vazio
