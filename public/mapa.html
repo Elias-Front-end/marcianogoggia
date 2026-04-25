@@ -169,6 +169,11 @@
         }
     </style>
     <script src="https://unpkg.com/lucide@latest"></script>
+    <script>
+        if (!localStorage.getItem('mg_token')) {
+            window.location.href = 'login.html';
+        }
+    </script>
 </head>
 <body>
     <div id="loading" class="loading-overlay">
