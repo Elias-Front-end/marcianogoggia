@@ -152,9 +152,8 @@ app.post('/api/auth/login', async (req, res) => {
         await pool.execute('UPDATE usuarios SET ultimo_login = NOW() WHERE id = ?', [usuario.id]);
 
         const token = jwt.sign(
-            { id: usuario.id, username: usuario.username, nome: usuario.nome, papel: usuario.papel },
-            JWT_SECRET,
-            { expiresIn: '8h' }
+            { id: usuario.id, username:usuario.username, nome: usuario.nome, papel: usuario.papel },
+            JWT_SECRET
         );
 
         res.json({ token, usuario: { id: usuario.id, nome: usuario.nome, username: usuario.username, papel: usuario.papel } });
