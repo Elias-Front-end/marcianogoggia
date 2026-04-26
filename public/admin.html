@@ -126,7 +126,7 @@
             background: rgba(10, 14, 23, 0.7); backdrop-filter: blur(15px);
             border-bottom: 1px solid rgba(255,255,255,0.05);
         }
-        .logo { font-size: 1.5rem; font-weight: 800; color: #1a1f2e; display: flex; align-items: center; gap: 8px; }
+        .logo { font-size: 1.5rem; font-weight: 800; color: #fff; display: flex; align-items: center; gap: 8px; }
         .logo span { color: #00d4ff; }
         
         .main-container {
@@ -213,6 +213,9 @@
             border-radius: 12px;
             color: #fff;
             transition: all 0.3s;
+        }
+        .search-container input::placeholder {
+            color: rgba(255,255,255,0.5);
         }
         .search-container input:focus {
             border-color: #00d4ff;
@@ -376,6 +379,9 @@
             background: rgba(0,0,0,0.3);
             color: #fff;
             font-size: 1rem;
+        }
+        .form-group input::placeholder {
+            color: rgba(255,255,255,0.5);
         }
         
         .form-group input:focus, .form-group select:focus {
