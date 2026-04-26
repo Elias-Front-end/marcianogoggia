@@ -13,15 +13,35 @@
     </script>
     <script src="js/auth.js"></script>
     <style>
-        .bg-video {
+.bg-video {
             position: fixed;
             top: 0;
-            left: 0;
-            width: 100vw;
+            right: 0;
+            width: 50vw;
             height: 100vh;
             object-fit: cover;
             z-index: -3;
-            filter: blur(3px) brightness(0.4);
+            filter: blur(2px) brightness(0.5) saturate(1.2);
+        }
+
+        .hero-bg {
+            position: fixed;
+            top: 0; left: 0; width: 50%; height: 100%;
+            background: linear-gradient(135deg, rgba(0,0,0,0.9) 0%, rgba(0,20,40,0.95) 100%);
+            z-index: -4;
+        }
+
+        .content-side {
+            position: fixed;
+            left: 0;
+            top: 0;
+            width: 50vw;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            padding: 0 6rem;
+            z-index: 10;
         }
         :root {
             --primary: #00d4ff;
@@ -104,28 +124,28 @@
         @keyframes pulse { 0% { opacity: 0.4; } 50% { opacity: 1; } 100% { opacity: 0.4; } }
 
         .hero {
-            height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center;
-            text-align: center; padding: 0 2rem;
+            height: 100vh; display: flex; flex-direction: column; align-items: flex-start; justify-content: center;
+            text-align: left; padding: 0;
         }
 
         .hero-subtitle {
-            font-size: 0.85rem; font-weight: 800; letter-spacing: 8px; color: var(--primary);
-            text-transform: uppercase; margin-bottom: 2rem;
+            font-size: 0.75rem; font-weight: 800; letter-spacing: 6px; color: var(--primary);
+            text-transform: uppercase; margin-bottom: 1.5rem; padding-left: 3px;
         }
 
         .hero-title {
-            font-size: 5.5rem; font-weight: 900; line-height: 1; margin-bottom: 2rem;
+            font-size: 4.5rem; font-weight: 900; line-height: 1; margin-bottom: 1.5rem;
             letter-spacing: -2px; text-transform: uppercase;
         }
 
         .hero-desc {
-            max-width: 650px; font-size: 1.1rem; font-weight: 300; color: rgba(255,255,255,0.6);
-            margin-bottom: 2.5rem; line-height: 1.8;
+            max-width: 480px; font-size: 1rem; font-weight: 300; color: rgba(255,255,255,0.5);
+            margin-bottom: 2rem; line-height: 1.8;
         }
 
         /* Intelligence Metrics HUD */
         .intel-metrics {
-            display: flex; gap: 3rem; margin-bottom: 4rem; justify-content: center;
+            display: flex; gap: 2.5rem; margin-bottom: 3rem; justify-content: flex-start;
         }
         .metric-box { text-align: left; position: relative; padding-left: 15px; border-left: 1px solid rgba(0, 212, 255, 0.3); }
         .metric-box .m-label { font-size: 0.65rem; font-weight: 800; color: rgba(255,255,255,0.4); text-transform: uppercase; letter-spacing: 2px; }
@@ -165,37 +185,17 @@
         @media (max-width: 768px) {
             .navbar { padding: 1.5rem; }
             .menu-toggle { display: block; }
-            
-            .nav-links { 
-                display: flex;
-                flex-direction: column;
-                position: fixed;
-                top: 0;
-                right: -100%;
-                width: 250px;
-                height: 100vh;
-                background: rgba(0, 0, 0, 0.95);
-                backdrop-filter: blur(10px);
-                border-left: 1px solid rgba(255, 255, 255, 0.1);
-                padding-top: 5rem;
-                transition: right 0.3s ease;
-                transform: none;
-                left: auto;
-                align-items: center;
-                z-index: 1000;
+            .bg-video { width: 100vw; }
+            .content-side { 
+                width: 100vw; 
+                padding: 0 2rem; 
+                justify-content: flex-end;
+                padding-bottom: 15vh;
             }
             
-            .nav-links.active {
-                right: 0;
-            }
-            
-            .intel-metrics {
-                flex-direction: column;
-                gap: 1.5rem;
-                align-items: center;
-            }
-            
-            .hero-title { font-size: 3rem; }
+            .hero-title { font-size: 2.5rem; }
+            .hero-desc { font-size: 0.9rem; }
+            .intel-metrics { gap: 1.5rem; }
             .hero-actions { flex-direction: column; width: 100%; max-width: 300px; }
             .sync-status, .lat-info { display: none; }
         }
@@ -248,7 +248,7 @@
         </div>
     </div>
 
-    <section class="hero">
+    <div class="content-side">
         <div class="hero-subtitle">Inteligência & Engajamento</div>
         <h1 class="hero-title">Marciano Goggia</h1>
         <p class="hero-desc">
@@ -275,7 +275,7 @@
             <a href="mapa.html" class="btn-action btn-explorar">Explorar Mapa</a>
             <a href="dashboard.html" class="btn-action btn-relatorios">Relatórios</a>
         </div>
-    </section>
+    </div>
 
     <div class="lat-info">LAT: 23.5585 S</div>
 
