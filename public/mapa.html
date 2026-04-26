@@ -170,7 +170,7 @@
     </style>
     <script src="https://unpkg.com/lucide@latest"></script>
     <script>
-        if (!localStorage.getItem('mg_token')) {
+        if (!sessionStorage.getItem('mg_token')) {
             window.location.href = 'login.html';
         }
     </script>

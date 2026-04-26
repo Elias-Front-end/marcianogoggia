@@ -7,7 +7,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/lucide@latest"></script>
     <script>
-        if (!localStorage.getItem('mg_token')) {
+        if (!sessionStorage.getItem('mg_token')) {
             window.location.href = 'login.html';
         }
     </script>

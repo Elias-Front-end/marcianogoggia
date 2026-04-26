@@ -7,14 +7,14 @@ const Auth = (() => {
     const TOKEN_KEY = 'mg_token';
     const USER_KEY  = 'mg_usuario';
 
-    function getToken() { return localStorage.getItem(TOKEN_KEY); }
+    function getToken() { return sessionStorage.getItem(TOKEN_KEY); }
     function getUsuario() {
-        try { return JSON.parse(localStorage.getItem(USER_KEY)); } catch { return null; }
+        try { return JSON.parse(sessionStorage.getItem(USER_KEY)); } catch { return null; }
     }
 
     function logout() {
-        localStorage.removeItem(TOKEN_KEY);
-        localStorage.removeItem(USER_KEY);
+        sessionStorage.removeItem(TOKEN_KEY);
+        sessionStorage.removeItem(USER_KEY);
         window.location.href = 'login.html';
     }
 
@@ -29,7 +29,7 @@ const Auth = (() => {
             });
             if (!res.ok) throw new Error('unauthorized');
             const user = await res.json();
-            localStorage.setItem(USER_KEY, JSON.stringify(user));
+            sessionStorage.setItem(USER_KEY, JSON.stringify(user));
             return user;
         } catch {
             logout();
