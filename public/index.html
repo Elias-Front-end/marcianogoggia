@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Marciano Goggia - Intelligence & Engagement</title>
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800;900&display=swap">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800;900&family=Orbitron:wght@400;500;600;700;800;900&display=swap">
     <script src="https://unpkg.com/lucide@latest"></script>
     <script>
         if (!sessionStorage.getItem('mg_token')) {
@@ -199,26 +199,33 @@
         }
 
 .hero-title {
-            font-size: 6rem; font-weight: 900; line-height: 1; margin-bottom: 1.5rem;
+            font-size: 6rem; font-weight: 900; line-height: 1; margin-bottom: 2rem;
             letter-spacing: -3px; text-transform: uppercase;
-            text-shadow: 0 4px 30px rgba(0,0,0,0.5);
-            background: linear-gradient(180deg, #fff 0%, rgba(255,255,255,0.8) 100%);
+            font-family: 'Orbitron', 'Inter', sans-serif;
+            background: linear-gradient(135deg, #00d4ff 0%, #ffffff 25%, #00d4ff 50%, #ffffff 75%, #00d4ff 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
-            transform: perspective(500px) rotateX(0deg);
-            transition: transform 0.3s ease;
-            animation: titleFloat 4s ease-in-out infinite;
+            background-size: 200% 200%;
+            animation: titleShimmer 3s ease-in-out infinite, titleFloat 4s ease-in-out infinite;
+            text-shadow: none;
+            filter: drop-shadow(0 0 30px rgba(0,212,255,0.5)) drop-shadow(0 0 60px rgba(0,212,255,0.3));
+        }
+
+        @keyframes titleShimmer {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
         }
 
         @keyframes titleFloat {
-            0%, 100% { transform: perspective(500px) rotateX(0deg) translateY(0); }
-            50% { transform: perspective(500px) rotateX(2deg) translateY(-5px); }
+            0%, 100% { transform: perspective(500px) rotateX(0deg) translateY(0) translateZ(0); }
+            50% { transform: perspective(500px) rotateX(2deg) translateY(-8px) translateZ(10px); }
         }
 
         .hero-title:hover {
-            transform: perspective(500px) rotateX(5deg) scale(1.02);
-            text-shadow: 0 0 40px rgba(0,212,255,0.8), 0 0 80px rgba(0,212,255,0.4);
+            animation: titleShimmer 1s ease-in-out infinite, titleFloat 4s ease-in-out infinite;
+            filter: drop-shadow(0 0 40px rgba(0,212,255,0.8)) drop-shadow(0 0 80px rgba(0,212,255,0.5)) drop-shadow(0 0 120px rgba(0,212,255,0.3));
         }
 
         .hero-subtitle {
@@ -333,10 +340,6 @@
     <div class="deco-line deco-line-h2"></div>
 
     <nav class="navbar">
-        <div class="logo-container">
-            <div class="logo-icon"><i data-lucide="zap" style="width:16px; height:16px;"></i></div>
-            <div class="logo-text">Marciano Goggia</div>
-        </div>
         <div class="nav-links" id="nav-links">
             <a href="mapa.html">Mapa</a>
             <a href="dashboard.html">Dashboard</a>
