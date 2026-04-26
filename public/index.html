@@ -12,8 +12,8 @@
         }
     </script>
     <script src="js/auth.js"></script>
-    <style>
-.bg-video {
+<style>
+        .bg-video {
             position: fixed;
             top: 0;
             left: 0;
@@ -21,7 +21,7 @@
             height: 100vh;
             object-fit: cover;
             z-index: -3;
-            filter: blur(1px) brightness(0.6) saturate(1.1);
+            filter: blur(0.5px) brightness(0.5) saturate(1.2);
         }
 
         .video-overlay {
@@ -30,29 +30,11 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: linear-gradient(135deg, rgba(0,0,0,0.85) 0%, rgba(0,20,40,0.75) 50%, rgba(0,0,0,0.8) 100%);
+            background: linear-gradient(180deg, rgba(0,0,0,0.7) 0%, rgba(0,10,30,0.6) 50%, rgba(0,0,0,0.75) 100%);
             z-index: -2;
         }
 
-        .hero {
-            height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center;
-            text-align: center; padding: 0 2rem;
-        }
-
-        .hero-subtitle {
-            font-size: 0.85rem; font-weight: 800; letter-spacing: 8px; color: var(--primary);
-            text-transform: uppercase; margin-bottom: 2rem;
-        }
-
-        .hero-title {
-            font-size: 5.5rem; font-weight: 900; line-height: 1; margin-bottom: 2rem;
-            letter-spacing: -2px; text-transform: uppercase;
-        }
-
-        .hero-desc {
-            max-width: 650px; font-size: 1.1rem; font-weight: 300; color: rgba(255,255,255,0.6);
-            margin-bottom: 2.5rem; line-height: 1.8;
-        }
+        :root {
             --primary: #00d4ff;
             --secondary: #00ff88;
             --bg: #000000;
@@ -70,23 +52,12 @@
             height: 100vh;
         }
 
-        /* Hero Background with Space Earth */
-        .hero-bg {
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), 
-                        url('https://images.unsplash.com/photo-1451187580459-43490279c0fa?q=80&w=2072&auto=format&fit=crop') no-repeat center center;
-            background-size: cover;
-            z-index: -3;
-            filter: brightness(0.7);
-        }
-
         #network-canvas {
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
             z-index: -1;
             pointer-events: none;
-            opacity: 0.8;
+            opacity: 0.6;
         }
 
         .navbar { 
@@ -131,35 +102,41 @@
         .dot.active { background: var(--primary); box-shadow: 0 0 8px var(--primary); animation: pulse 1.5s infinite; }
 
         @keyframes pulse { 0% { opacity: 0.4; } 50% { opacity: 1; } 100% { opacity: 0.4; } }
-
+        
         .hero {
             height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center;
             text-align: center; padding: 0 2rem;
         }
 
         .hero-subtitle {
-            font-size: 0.85rem; font-weight: 800; letter-spacing: 8px; color: var(--primary);
-            text-transform: uppercase; margin-bottom: 2rem;
+            font-size: 0.75rem; font-weight: 800; letter-spacing: 10px; color: var(--primary);
+            text-transform: uppercase; margin-bottom: 1.5rem;
+            text-shadow: 0 0 20px rgba(0,212,255,0.5);
         }
 
         .hero-title {
-            font-size: 5.5rem; font-weight: 900; line-height: 1; margin-bottom: 2rem;
-            letter-spacing: -2px; text-transform: uppercase;
+            font-size: 6rem; font-weight: 900; line-height: 1; margin-bottom: 1.5rem;
+            letter-spacing: -3px; text-transform: uppercase;
+            text-shadow: 0 4px 30px rgba(0,0,0,0.5);
+            background: linear-gradient(180deg, #fff 0%, rgba(255,255,255,0.8) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
         }
 
         .hero-desc {
-            max-width: 650px; font-size: 1.1rem; font-weight: 300; color: rgba(255,255,255,0.6);
+            max-width: 600px; font-size: 1.05rem; font-weight: 300; color: rgba(255,255,255,0.5);
             margin-bottom: 2.5rem; line-height: 1.8;
         }
 
         /* Intelligence Metrics HUD */
         .intel-metrics {
-            display: flex; gap: 3rem; margin-bottom: 4rem; justify-content: center;
+            display: flex; gap: 3rem; margin-bottom: 3.5rem; justify-content: center;
         }
-        .metric-box { text-align: left; position: relative; padding-left: 15px; border-left: 1px solid rgba(0, 212, 255, 0.3); }
-        .metric-box .m-label { font-size: 0.65rem; font-weight: 800; color: rgba(255,255,255,0.4); text-transform: uppercase; letter-spacing: 2px; }
+        .metric-box { text-align: left; position: relative; padding-left: 15px; border-left: 2px solid rgba(0, 212, 255, 0.4); }
+        .metric-box .m-label { font-size: 0.6rem; font-weight: 800; color: rgba(255,255,255,0.4); text-transform: uppercase; letter-spacing: 2px; }
         .metric-box .m-value { font-size: 1.8rem; font-weight: 900; color: #fff; margin-top: 5px; font-variant-numeric: tabular-nums; }
-        .metric-box .m-value span { font-size: 0.8rem; color: var(--primary); margin-left: 5px; }
+        .metric-box .m-value span { font-size: 0.75rem; color: var(--primary); margin-left: 5px; }
 
         .hero-actions { display: flex; gap: 1.5rem; }
         
@@ -168,10 +145,10 @@
             text-decoration: none; font-size: 0.85rem; transition: all 0.3s; text-transform: uppercase;
         }
         .btn-explorar { background: var(--primary); color: #000; }
-        .btn-explorar:hover { background: #00b8e6; transform: translateY(-2px); box-shadow: 0 10px 20px rgba(0,212,255,0.2); }
+        .btn-explorar:hover { background: #00b8e6; transform: translateY(-2px); box-shadow: 0 10px 30px rgba(0,212,255,0.3); }
         
         .btn-relatorios { border: 1px solid rgba(255,255,255,0.2); color: #fff; }
-        .btn-relatorios:hover { background: rgba(255,255,255,0.1); transform: translateY(-2px); }
+        .btn-relatorios:hover { background: rgba(255,255,255,0.1); border-color: rgba(255,255,255,0.4); transform: translateY(-2px); }
 
         /* Deco Elements */
         .lat-info {
@@ -194,11 +171,11 @@
         @media (max-width: 768px) {
             .navbar { padding: 1.5rem; }
             .menu-toggle { display: block; }
-            .video-overlay { background: rgba(0,0, 0, 0.85); }
+            .video-overlay { background: rgba(0,0,0,0.85); }
             
-            .hero-title { font-size: 2.5rem; }
+            .hero-title { font-size: 2.8rem; }
             .hero-desc { font-size: 0.9rem; }
-            .intel-metrics { gap: 1.5rem; }
+            .intel-metrics { gap: 1.5rem; flex-wrap: wrap; justify-content: center; }
             .hero-actions { flex-direction: column; width: 100%; max-width: 300px; }
             .sync-status, .lat-info { display: none; }
         }
