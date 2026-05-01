@@ -451,10 +451,15 @@
                 <span class="stat-value" id="t4">0</span>
                 <span class="stat-label">Bairros</span>
             </div>
-            <div class="stat-card" style="grid-column: span 2;">
+            <div class="stat-card" style="grid-column: span 1;">
                 <i data-lucide="users" style="width: 14px; height: 14px; color: #ffc107; margin-bottom: 5px;"></i>
                 <span class="stat-value" id="t5">0</span>
-                <span class="stat-label">Total Familiares Votantes (FV)</span>
+                <span class="stat-label">Total FV</span>
+            </div>
+            <div class="stat-card" style="grid-column: span 1;">
+                <i data-lucide="vote" style="width: 14px; height: 14px; color: #00d4ff; margin-bottom: 5px;"></i>
+                <span class="stat-value" id="t6">0</span>
+                <span class="stat-label">Total Votos (Apoio+FV)</span>
             </div>
         </div>
         <div class="chart-widget" id="widget_table">
@@ -466,8 +471,9 @@
                     <thead style="position: sticky; top: 0; background: #1a1f2e; color: #00d4ff;">
                         <tr>
                             <th style="text-align: left; padding: 5px; border-bottom: 1px solid rgba(255,255,255,0.1);">Bairro</th>
-                            <th style="text-align: center; padding: 5px; border-bottom: 1px solid rgba(255,255,255,0.1);">Qtd</th>
+                            <th style="text-align: center; padding: 5px; border-bottom: 1px solid rgba(255,255,255,0.1);">Apoiadores</th>
                             <th style="text-align: center; padding: 5px; border-bottom: 1px solid rgba(255,255,255,0.1);">FV</th>
+                            <th style="text-align: center; padding: 5px; border-bottom: 1px solid rgba(255,255,255,0.1);">Total Votos</th>
                             <th style="text-align: right; padding: 5px; border-bottom: 1px solid rgba(255,255,255,0.1);">%</th>
                         </tr>
                     </thead>
@@ -708,13 +714,20 @@
             if (tbody) {
                 tbody.innerHTML = '';
                 var bFV = {};
+                var bTotalVotos = {};
                 for (var k = 0; k < d.length; k++) {
                     var bName = d[k].bairro;
-                    if (bName) bFV[bName] = (bFV[bName] || 0) + (parseInt(d[k].familiares_votantes) || 0);
+                    if (bName) {
+                        var fvCount = parseInt(d[k].familiares_votantes) || 0;
+                        bFV[bName] = (bFV[bName] || 0) + fvCount;
+                        bTotalVotos[bName] = (bTotalVotos[bName] || 0) + 1 + fvCount;
+                    }
                 }
 
                 var totalFV = d.reduce((acc, item) => acc + (parseInt(item.familiares_votantes) || 0), 0);
+                var totalVotosGeral = t + totalFV;
                 document.getElementById('t5').textContent = totalFV;
+                document.getElementById('t6').textContent = totalVotosGeral;
 
                 var sortedBairros = Object.keys(bCount).sort((a,b) => bCount[b] - bCount[a]);
                 sortedBairros.forEach(b => {
@@ -725,6 +738,7 @@
                         <td style="padding: 6px; border-bottom: 1px solid rgba(255,255,255,0.05);">${b}</td>
                         <td style="padding: 6px; border-bottom: 1px solid rgba(255,255,255,0.05); text-align: center;">${bCount[b]}</td>
                         <td style="padding: 6px; border-bottom: 1px solid rgba(255,255,255,0.05); text-align: center; color: #ffc107;">${bFV[b] || 0}</td>
+                        <td style="padding: 6px; border-bottom: 1px solid rgba(255,255,255,0.05); text-align: center; color: #00d4ff; font-weight: bold;">${bTotalVotos[b] || 0}</td>
                         <td style="padding: 6px; border-bottom: 1px solid rgba(255,255,255,0.05); text-align: right; color: #00ff88;">${pct}%</td>
                     `;
                     tbody.appendChild(tr);
