@@ -657,6 +657,11 @@
                 <span class="stat-value" id="countLocalizado">0</span>
                 <span class="stat-label">Localizados</span>
             </div>
+            <div class="stat-card">
+                <i data-lucide="users" style="color:#ffc107; width:16px; margin-bottom:8px;"></i>
+                <span class="stat-value" id="totalFVCount">0</span>
+                <span class="stat-label">Total FV</span>
+            </div>
         </div>
 
         <div class="toolbar">
@@ -688,6 +693,7 @@
                                 <th>Endereço</th>
                                 <th>Bairro</th>
                                 <th>Contato</th>
+                                <th>FV</th>
                                 <th>Data/Hora</th>
                                 <th>Ações</th>
                             </tr>
@@ -802,6 +808,10 @@
                             <div class="form-group">
                                 <label for="email">Email</label>
                                 <input type="email" id="email" placeholder="email@exemplo.com">
+                            </div>
+                            <div class="form-group">
+                                <label for="familiares_votantes">Familiares Votantes (FV)</label>
+                                <input type="number" id="familiares_votantes" min="0" value="0" placeholder="0">
                             </div>
                         </div>
                         <div class="form-group">
@@ -955,6 +965,8 @@
             document.getElementById('bairroCount').textContent = bairros.length;
             const localizados = allData.filter(d => d.latitude && d.longitude).length;
             document.getElementById('countLocalizado').textContent = localizados;
+            const totalFV = allData.reduce((acc, d) => acc + (parseInt(d.familiares_votantes) || 0), 0);
+            document.getElementById('totalFVCount').textContent = totalFV;
         }
         
         function filtrarDados() {
@@ -993,6 +1005,9 @@
                             ${d.telefone ? `<div style="display:flex; align-items:center; gap:5px;"><i data-lucide="phone" style="width:10px; color:#00ff88;"></i> ${d.telefone}</div>` : ''}
                             ${d.email ? `<div style="display:flex; align-items:center; gap:5px;"><i data-lucide="mail" style="width:10px; color:#00d4ff;"></i> ${d.email}</div>` : ''}
                         </div>
+                    </td>
+                    <td>
+                        <div style="font-weight:700; color:#ffc107; text-align:center;">${d.familiares_votantes || 0}</div>
                     </td>
                     <td>
                         <div style="display:flex; flex-direction:column; gap:4px;">
@@ -1119,6 +1134,7 @@
             document.getElementById('bairro').value = registro.bairro || '';
             document.getElementById('telefone').value = registro.telefone || '';
             document.getElementById('email').value = registro.email || '';
+            document.getElementById('familiares_votantes').value = registro.familiares_votantes || 0;
             
             document.getElementById('latitude').value = registro.latitude || '';
             document.getElementById('longitude').value = registro.longitude || '';
@@ -1163,6 +1179,7 @@
             const bairro = document.getElementById('bairro').value;
             const telefone = document.getElementById('telefone').value;
             const email = document.getElementById('email').value;
+            const familiares_votantes = document.getElementById('familiares_votantes').value;
             const id = document.getElementById('editId').value;
             
             // Mostrar loading
@@ -1197,6 +1214,7 @@
                     bairro: bairro,
                     telefone: telefone,
                     email: email,
+                    familiares_votantes: parseInt(familiares_votantes) || 0,
                     latitude: parseFloat(finalLat),
                     longitude: parseFloat(finalLng),
                     coordenadas_precisas: finalPreciso
@@ -1243,9 +1261,9 @@
                 return;
             }
             
-            const csv = 'Nome,Rua,Numero,Bairro,Telefone,Email,Data Cadastro,Hora Cadastro\n' + 
+            const csv = 'Nome,Rua,Numero,Bairro,Telefone,Email,FV,Data Cadastro,Hora Cadastro\n' + 
                 allData.map(d => 
-                    `"${d.nome || ''}","${d.rua || ''}","${d.numero || ''}","${d.bairro || ''}","${d.telefone || ''}","${d.email || ''}","${d.data_cadastro || ''}","${d.hora_cadastro || ''}"`
+                    `"${d.nome || ''}","${d.rua || ''}","${d.numero || ''}","${d.bairro || ''}","${d.telefone || ''}","${d.email || ''}","${d.familiares_votantes || 0}","${d.data_cadastro || ''}","${d.hora_cadastro || ''}"`
                 ).join('\n');
             
             const blob = new Blob([csv], { type: 'text/csv' });

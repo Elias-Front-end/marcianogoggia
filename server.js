@@ -35,10 +35,18 @@ async function initDB() {
                 latitude DECIMAL(10, 8),
                 longitude DECIMAL(11, 8),
                 coordenadas_precisas BOOLEAN DEFAULT TRUE,
+                familiares_votantes INT DEFAULT 0,
                 data_cadastro DATE DEFAULT (CURRENT_DATE),
                 hora_cadastro TIME DEFAULT (CURRENT_TIME)
             )
         `);
+
+        // Update table if column doesn't exist
+        try {
+            await pool.query('ALTER TABLE apoiadores ADD COLUMN IF NOT EXISTS familiares_votantes INT DEFAULT 0');
+        } catch (e) {
+            console.log('Coluna familiares_votantes já existe ou erro ao adicionar.');
+        }
 
         await pool.query(`
             CREATE TABLE IF NOT EXISTS coordenadas_cache (
@@ -82,20 +90,20 @@ async function initDB() {
         if (rows[0].count === 0) {
             console.log('Inserindo cadastros iniciais...');
             const seedData = [
-                ['Narciso Franklin de Almeida', 'R. Eloina Ribas Bastos', '468', 'Costeira'],
-                ['Maria Gonçalves de Oliveira', 'R. Eloina Ribas Bastos', '468', 'Costeira'],
-                ['João Leandro Matias', 'R. Almerinda de Oliveira Alves', '164', 'Rio Pequeno'],
-                ['Douglas Henrique de moura', 'R. Estanislau lachinski', '610', 'Piraquara'],
-                ['Rodrigo Pará', 'R. Itaoca', '201', 'Guatupê'],
-                ['Mayara do socorro da Silva', 'R. Luiz Rafael poplade', '314', 'Iná'],
-                ['Roseli de Lima neimam', 'R. Jânio quadros', 'S/N', 'Ipê'],
-                ['Luciano schappo Diogo', 'R. Giocondo dal Stella', '341', 'Quissisana'],
-                ['Sebastião Pereira de Castro', 'R. Sebastião spejorin', '950', 'São Marcos']
+                ['Narciso Franklin de Almeida', 'R. Eloina Ribas Bastos', '468', 'Costeira', 2],
+                ['Maria Gonçalves de Oliveira', 'R. Eloina Ribas Bastos', '468', 'Costeira', 3],
+                ['João Leandro Matias', 'R. Almerinda de Oliveira Alves', '164', 'Rio Pequeno', 1],
+                ['Douglas Henrique de moura', 'R. Estanislau lachinski', '610', 'Piraquara', 4],
+                ['Rodrigo Pará', 'R. Itaoca', '201', 'Guatupê', 2],
+                ['Mayara do socorro da Silva', 'R. Luiz Rafael poplade', '314', 'Iná', 1],
+                ['Roseli de Lima neimam', 'R. Jânio quadros', 'S/N', 'Ipê', 5],
+                ['Luciano schappo Diogo', 'R. Giocondo dal Stella', '341', 'Quissisana', 2],
+                ['Sebastião Pereira de Castro', 'R. Sebastião spejorin', '950', 'São Marcos', 3]
             ];
             
             for (const data of seedData) {
                 await pool.execute(
-                    'INSERT INTO apoiadores (nome, rua, numero, bairro, coordenadas_precisas) VALUES (?, ?, ?, ?, ?)',
+                    'INSERT INTO apoiadores (nome, rua, numero, bairro, familiares_votantes, coordenadas_precisas) VALUES (?, ?, ?, ?, ?, ?)',
                     [...data, false]
                 );
             }
@@ -234,16 +242,16 @@ app.delete('/api/usuarios/:id', authMiddleware, adminOnly, async (req, res) => {
 
 app.post('/api/apoiadores', async (req, res) => {
     try {
-        const { nome, rua, numero, bairro, telefone, email, latitude, longitude, coordenadas_precisas } = req.body;
+        const { nome, rua, numero, bairro, telefone, email, latitude, longitude, coordenadas_precisas, familiares_votantes } = req.body;
         
         if (!nome || !rua || !numero || !bairro) {
             return res.status(400).json({ error: 'Nome, rua, número e bairro são obrigatórios' });
         }
         
         const [result] = await pool.execute(`
-            INSERT INTO apoiadores (nome, rua, numero, bairro, telefone, email, latitude, longitude, coordenadas_precisas)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-        `, [nome, rua, numero, bairro, telefone || null, email || null, latitude || null, longitude || null, coordenadas_precisas !== false]);
+            INSERT INTO apoiadores (nome, rua, numero, bairro, telefone, email, latitude, longitude, coordenadas_precisas, familiares_votantes)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        `, [nome, rua, numero, bairro, telefone || null, email || null, latitude || null, longitude || null, coordenadas_precisas !== false, familiares_votantes || 0]);
         
         res.status(201).json({ id: result.insertId, message: 'Apoiador cadastrado com sucesso' });
     } catch (err) {
@@ -265,7 +273,7 @@ app.get('/api/apoiadores', async (req, res) => {
 app.put('/api/apoiadores/:id', async (req, res) => {
     try {
         const { id } = req.params;
-        const { nome, rua, numero, bairro, telefone, email, latitude, longitude, coordenadas_precisas } = req.body;
+        const { nome, rua, numero, bairro, telefone, email, latitude, longitude, coordenadas_precisas, familiares_votantes } = req.body;
         
         if (!nome || !rua || !numero || !bairro) {
             return res.status(400).json({ error: 'Nome, rua, número e bairro são obrigatórios' });
@@ -273,9 +281,9 @@ app.put('/api/apoiadores/:id', async (req, res) => {
         
         await pool.execute(`
             UPDATE apoiadores 
-            SET nome = ?, rua = ?, numero = ?, bairro = ?, telefone = ?, email = ?, latitude = ?, longitude = ?, coordenadas_precisas = ?
+            SET nome = ?, rua = ?, numero = ?, bairro = ?, telefone = ?, email = ?, latitude = ?, longitude = ?, coordenadas_precisas = ?, familiares_votantes = ?
             WHERE id = ?
-        `, [nome, rua, numero, bairro, telefone || null, email || null, latitude || null, longitude || null, coordenadas_precisas !== false, id]);
+        `, [nome, rua, numero, bairro, telefone || null, email || null, latitude || null, longitude || null, coordenadas_precisas !== false, familiares_votantes || 0, id]);
         
         res.json({ message: 'Apoiador atualizado com sucesso' });
     } catch (err) {
@@ -300,11 +308,13 @@ app.get('/api/stats', async (req, res) => {
         const [r1] = await pool.query('SELECT COUNT(*) as total FROM apoiadores');
         const [r2] = await pool.query('SELECT COUNT(DISTINCT bairro) as total FROM apoiadores');
         const [r3] = await pool.query('SELECT COUNT(*) as total FROM apoiadores WHERE coordenadas_precisas = 1');
+        const [r4] = await pool.query('SELECT SUM(familiares_votantes) as total FROM apoiadores');
         
         res.json({
             total: r1[0].total || 0,
             bairros: r2[0].total || 0,
-            precisos: r3[0].total || 0
+            precisos: r3[0].total || 0,
+            totalFV: r4[0].total || 0
         });
     } catch (err) {
         res.status(500).json({ error: 'Erro ao buscar stats' });
